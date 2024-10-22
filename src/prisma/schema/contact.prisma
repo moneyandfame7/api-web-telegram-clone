@@ -1,0 +1,11 @@
+model Contact {
+  id        String  @id @default(uuid())
+  firstName String
+  lastName  String?
+
+  owner   User   @relation(fields: [ownerId], references: [id], name: "ContactToOwner")
+  ownerId String
+
+  contact   User   @relation(fields: [contactId], references: [id], name: "ContactToUser")
+  contactId String
+}

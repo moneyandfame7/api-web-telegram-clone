@@ -1,0 +1,31 @@
+model Chat {
+  id              String    @id @default(uuid())
+  color           ChatColor
+  type            ChatType
+  title           String
+  description     String?
+  createdAt       DateTime  @default(now())
+  isSavedMessages Boolean
+
+  members ChatMember[]
+}
+
+model ChatMember {
+  id String @id @default(uuid())
+
+  isOwner    Boolean
+  isPinned   Boolean @default(false)
+  isMuted    Boolean @default(false)
+  isArchived Boolean @default(false)
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  Chat   Chat?   @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  chatId String?
+}
+
+enum ChatType {
+  PRIVATE
+  GROUP
+  CHANNEL
+}
