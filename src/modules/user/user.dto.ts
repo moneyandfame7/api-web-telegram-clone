@@ -3,11 +3,13 @@ import { IsOptional, IsString, MinLength } from 'class-validator'
 
 export class UserDTO {
   id: string
-
   username: string
   firstName: string
   lastName?: string
   color: ChatColor
+  /**
+   * dto mapping
+   */
   isSelf: boolean
   isContact: boolean
   isMutualContact: boolean

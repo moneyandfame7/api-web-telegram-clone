@@ -6,3 +6,7 @@ export function getRandomElement<T>(arr: T[]): T {
 export async function pause(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
+
+export function getMapKey<Key, Value>(map: Map<Key, Value>, value: Value): Key | undefined {
+  return [...map].find(([key, val]) => value === val)?.[0]
+}

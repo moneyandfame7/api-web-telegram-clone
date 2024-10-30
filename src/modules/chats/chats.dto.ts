@@ -59,3 +59,12 @@ export class CreateChatDto {
   @IsOptional()
   users!: string[]
 }
+
+export class TestChatDto {
+  @IsString()
+  title: string
+
+  @IsUUID(undefined, { each: true })
+  @IsOptional()
+  users!: string[]
+}

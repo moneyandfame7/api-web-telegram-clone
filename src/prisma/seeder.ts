@@ -91,12 +91,13 @@ class Seeder {
 const seed = new Seeder()
 async function main() {
   await seed.createMockAccount({ firstName: 'Admin', username: 'admin', password: '12345678', withSessions: true })
-
-  await seed.createMockAccount({ firstName: 'Davyd', username: 'moneyandfame', password: '12345678', withSessions: false })
-
-  await seed.createUsers()
-
-  await seed.createChatsAndConnect()
+  await seed.createMockAccount({ firstName: 'User1', username: 'user1', password: '12345678', withSessions: false })
+  await seed.createMockAccount({ firstName: 'User2', username: 'user2', password: '12345678', withSessions: false })
+  await seed.createMockAccount({ firstName: 'User3', username: 'user3', password: '12345678', withSessions: false })
+  await seed.createMockAccount({ firstName: 'User4', username: 'user4', password: '12345678', withSessions: false })
+  await seed.createMockAccount({ firstName: 'User5', username: 'user5', password: '12345678', withSessions: false })
+  // await seed.createUsers()
+  // await seed.createChatsAndConnect()
 }
 
 main()
