@@ -9,9 +9,10 @@ import { AuthorizationModule } from './modules/authorization/authorization.modul
 import { SessionModule } from './modules/session/session.module'
 import { PrismaModule } from './prisma/prisma.module'
 import { ContactsModule } from './modules/contacts/contacts.module'
+import { GatewayModule } from './gateway/gateway.module'
 
 @Module({
-  imports: [PrismaModule, SessionModule, AuthorizationModule, ChatsModule, UserModule, ContactsModule],
+  imports: [PrismaModule, GatewayModule, SessionModule, AuthorizationModule, ChatsModule, UserModule, ContactsModule],
   controllers: [AppController],
   providers: [AppService]
 })

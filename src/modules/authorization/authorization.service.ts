@@ -89,6 +89,19 @@ export class AuthorizationService {
     return true
   }
 
+  public async verifyAccessToken(token: string): Promise<AuthorizationPayload> {
+    const payload: JwtAccessPayload = await this.jwtService.verifyAsync(token, {
+      secret: 'JWT_ACCESS'
+    })
+    const session = await this.sessionService.findById(payload.sessionId)
+
+    if (!session) {
+      throw new BadRequestException('Invalid session id provided')
+    }
+
+    return { ...payload, session }
+  }
+
   private async verifyRefreshToken(token: string): Promise<JwtRefreshPayload> {
     try {
       return await this.jwtService.verifyAsync<JwtRefreshPayload>(token, { secret: 'JWT_REFRESH' })
