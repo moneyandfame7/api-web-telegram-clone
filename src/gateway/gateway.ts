@@ -9,7 +9,7 @@ import {
 } from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io'
 import { AuthorizationService } from '../modules/authorization/authorization.service'
-import { CurrentSocket, SocketInfo } from './gateway.types'
+import { TypedSocket, SocketInfo, TypedServer } from './gateway.types'
 import { SocketClientsManager } from './socket-clients.manager'
 import { UnauthorizedException } from '@nestjs/common'
 import { ErrorCode } from '../common/errors/error-code.enum'
@@ -18,14 +18,14 @@ import { TokenExpiredError } from '@nestjs/jwt'
 // що якщо юзер підключатиметься з двох девайсів? одразу
 @WebSocketGateway({ cors: true })
 export class Gateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
-  @WebSocketServer() server: Server
+  @WebSocketServer() server: TypedServer
 
   /**
    * @todo: назвати просто SocketsManager
    */
   public clientsManager = new SocketClientsManager()
   public constructor(private authorizationService: AuthorizationService) {}
-  async afterInit(server: Server) {
+  async afterInit(server: TypedServer) {
     server.use(async (socket, next) => {
       try {
         console.log('MIDDLEWARE', socket.id)
@@ -45,6 +45,10 @@ export class Gateway implements OnGatewayConnection, OnGatewayDisconnect, OnGate
           sessionId: payload.sessionId,
           socketId: socket.id
         }
+        socket.data = {
+          userId: payload.userId,
+          sessionId: payload.sessionId
+        }
         this.clientsManager.addClient(payload.userId, socketInfo)
 
         next()
@@ -58,7 +62,7 @@ export class Gateway implements OnGatewayConnection, OnGatewayDisconnect, OnGate
     })
   }
 
-  async handleConnection(client: CurrentSocket, ...args: any[]) {
+  async handleConnection(client: TypedSocket, ...args: any[]) {
     console.log('CONNECT', client.id, client.userId, client.sessionId)
     // const accessToken = client.handshake.headers.authorization
 
@@ -101,8 +105,9 @@ export class Gateway implements OnGatewayConnection, OnGatewayDisconnect, OnGate
 
   @SubscribeMessage('join')
   async join(client: Socket, roomName: string) {
+    console.log(`user ${client.data?.userId} joined to room [${roomName}]`)
     // client.handshake.query.userId
     // console.log('QUERY:', client.handshake.query, 'ROOM:', roomName)
-    // client.join(roomName)
+    client.join(roomName)
   }
 }

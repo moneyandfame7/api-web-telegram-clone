@@ -1,0 +1,18 @@
+model Message {
+  id        String @id @unique @default(uuid())
+  orderedId Int
+
+  text String?
+
+  chat   Chat   @relation(fields: [chatId], references: [id])
+  chatId String
+
+  lastInChat   Chat?   @relation(name: "LastMessageIn", fields: [lastInChatId], references: [id])
+  lastInChatId String? @unique
+
+  sender   User   @relation(fields: [senderId], references: [id])
+  senderId String
+
+  createdAt DateTime  @default(now())
+  editedAt  DateTime?
+}

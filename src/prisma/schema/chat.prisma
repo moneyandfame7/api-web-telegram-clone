@@ -7,7 +7,9 @@ model Chat {
   createdAt       DateTime  @default(now())
   isSavedMessages Boolean
 
-  members ChatMember[]
+  members     ChatMember[]
+  messages    Message[]
+  lastMessage Message?     @relation(name: "LastMessageIn")
 }
 
 model ChatMember {
