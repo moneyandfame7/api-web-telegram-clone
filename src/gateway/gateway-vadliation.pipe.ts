@@ -1,8 +1,8 @@
-import { HttpException, Catch, ArgumentsHost, BadRequestException } from '@nestjs/common'
-import { BaseWsExceptionFilter, WsException } from '@nestjs/websockets'
+import { HttpException, Catch, ArgumentsHost, BadRequestException, ValidationPipe } from '@nestjs/common'
+import { WsException } from '@nestjs/websockets'
 import { Socket } from 'socket.io'
-import { BaseError } from '../common/errors/error-code.enum'
-
+import { BaseError, ValidationError } from '../common/errors/error-code.enum'
+import { ValidationError as DTOValidationError } from 'class-validator'
 @Catch(WsException, HttpException)
 export class WsExceptionFilter {
   public catch(exception: HttpException, host: ArgumentsHost) {
@@ -41,13 +41,19 @@ export class WsExceptionFilter {
   }
 }
 
-@Catch(WsException, HttpException)
-export class WebsocketExceptionsFilter extends BaseWsExceptionFilter {
-  catch(exception: WsException | HttpException, host: ArgumentsHost) {
-    const client = host.switchToWs().getClient<Socket>()
-    const data = host.switchToWs().getData()
-    const error = exception instanceof WsException ? exception.getError() : exception.getResponse()
-    const details = error instanceof Object ? { ...error } : { message: error }
-    client.emit('exception', error)
+export class GatewayValidationPipe extends ValidationPipe {
+  constructor() {
+    super({
+      stopAtFirstError: true,
+      exceptionFactory(validationErrors: DTOValidationError[] = []) {
+        // Here are the errors
+        if (this.isDetailedOutputDisabled) {
+          return new WsException('Bad Request')
+        }
+        const errors = this.flattenValidationErrors(validationErrors)
+
+        return new ValidationError(errors)
+      }
+    })
   }
 }

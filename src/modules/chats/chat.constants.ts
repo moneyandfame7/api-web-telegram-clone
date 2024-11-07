@@ -9,6 +9,7 @@ export const chatInclude = {
       }
     }
   },
+  lastMessage: true,
   _count: {
     select: {
       members: true

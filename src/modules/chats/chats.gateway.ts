@@ -1,49 +1,20 @@
-import { CurrentSocket } from './../../gateway/gateway.types'
-import {
-  ConnectedSocket,
-  MessageBody,
-  SubscribeMessage,
-  WebSocketGateway,
-  WebSocketServer,
-  WsException,
-  WsResponse
-} from '@nestjs/websockets'
+import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets'
 import { Server } from 'socket.io'
 import { Gateway } from '../../gateway/gateway'
+import { TypedServer, TypedSocket } from './../../gateway/gateway.types'
 
 import { RawChat } from './chats.types'
 import { ChatDTOMapper } from './chat.mapper'
 import { ChatDTO, CreateChatDto } from './chats.dto'
 import { ChatsService } from './chats.service'
-import {
-  BadRequestException,
-  UseFilters,
-  UsePipes,
-  ValidationError as DTOValidationError,
-  ValidationPipe
-} from '@nestjs/common'
-import { WsExceptionFilter } from '../../gateway/gateway-vadliation.pipe'
-import { UnauthorizedError } from '../../common/errors/authorization.errors'
-import { ValidationError } from '../../common/errors/error-code.enum'
+import { UseFilters, UsePipes } from '@nestjs/common'
+import { GatewayValidationPipe, WsExceptionFilter } from '../../gateway/gateway-vadliation.pipe'
 
-@UsePipes(
-  new ValidationPipe({
-    stopAtFirstError: true,
-    exceptionFactory(validationErrors: DTOValidationError[] = []) {
-      // Here are the errors
-      if (this.isDetailedOutputDisabled) {
-        return new WsException('Bad Request')
-      }
-      const errors = this.flattenValidationErrors(validationErrors)
-
-      return new ValidationError(errors)
-    }
-  })
-)
+@UsePipes(GatewayValidationPipe)
 @UseFilters(WsExceptionFilter)
 @WebSocketGateway({ cors: true })
 export class ChatGateway {
-  @WebSocketServer() server: Server
+  @WebSocketServer() server: TypedServer
 
   public constructor(
     private gateway: Gateway,
@@ -54,7 +25,7 @@ export class ChatGateway {
    * @todo перевірити ще цей ендпоінт, перевірити dto
    */
   @SubscribeMessage('createChat')
-  async createChat(@MessageBody() dto: CreateChatDto, @ConnectedSocket() client: CurrentSocket): Promise<ChatDTO> {
+  async createChat(@MessageBody() dto: CreateChatDto, @ConnectedSocket() client: TypedSocket): Promise<ChatDTO> {
     const raw = await this.chatService.createOne(client.userId, dto)
 
     this.chatCreated(raw, client.id)

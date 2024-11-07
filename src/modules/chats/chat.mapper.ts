@@ -13,7 +13,9 @@ export class ChatDTOMapper {
     const title = raw.isSavedMessages ? 'Saved Messages' : privateChatUserDTO?.fullName || raw.title
 
     return new ChatDTO({
-      id: raw.id,
+      id: privateChatUserDTO ? `u_${privateChatUserDTO.id}` : raw.id,
+      _realChatId: raw.id,
+      userId: privateChatUserDTO?.id,
       type: raw.type,
       title,
       description: raw.description || undefined,
