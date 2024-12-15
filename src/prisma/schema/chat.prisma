@@ -7,9 +7,10 @@ model Chat {
   createdAt       DateTime  @default(now())
   isSavedMessages Boolean
 
-  members     ChatMember[]
-  messages    Message[]
-  lastMessage Message?     @relation(name: "LastMessageIn")
+  members      ChatMember[]
+  messages     Message[]
+  lastMessage  Message?     @relation(name: "LastMessageIn")
+  firstMessage Message?     @relation(name: "FirstMessageIn")
 }
 
 model ChatMember {
@@ -19,6 +20,9 @@ model ChatMember {
   isPinned   Boolean @default(false)
   isMuted    Boolean @default(false)
   isArchived Boolean @default(false)
+
+  unreadCount                 Int  @default(0)
+  myLastReadMessageSequenceId Int?
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String

@@ -1,6 +1,6 @@
 model Message {
-  id        String @id @unique @default(uuid())
-  orderedId Int
+  id         String @id @unique @default(uuid())
+  sequenceId Int
 
   text String?
 
@@ -10,9 +10,14 @@ model Message {
   lastInChat   Chat?   @relation(name: "LastMessageIn", fields: [lastInChatId], references: [id])
   lastInChatId String? @unique
 
+  firstInChat   Chat?   @relation(name: "FirstMessageIn", fields: [firstInChatId], references: [id])
+  firstInChatId String? @unique
+
   sender   User   @relation(fields: [senderId], references: [id])
   senderId String
 
   createdAt DateTime  @default(now())
   editedAt  DateTime?
+
+  @@unique([chatId, sequenceId], name: "compositeSequenceId")
 }

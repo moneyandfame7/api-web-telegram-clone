@@ -1,6 +1,7 @@
 import { Server, Socket } from 'socket.io'
 import { ChatDTO } from '../modules/chats/chats.dto'
 import { MessageDTO } from '../modules/message/message.dto'
+import { ReadMyHistoryResult, ReadTheirHistoryResult } from '../modules/message/message.types'
 
 export interface ListenEvents {}
 
@@ -8,6 +9,9 @@ export interface EmitEvents {
   ['chat:created']: (chat: ChatDTO) => void
 
   ['onNewMessage']: (message: MessageDTO, chat: ChatDTO) => void
+
+  ['message:read-my']: (data: ReadMyHistoryResult) => void
+  ['message:read-their']: (data: ReadTheirHistoryResult) => void
 }
 
 export interface SocketInfo {

@@ -10,6 +10,7 @@ import { ChatsService } from './chats.service'
 import { RawChat } from './chats.types'
 import { ChatGateway } from './chats.gateway'
 import { ChatDTOMapper } from './chat.mapper'
+import { ChatIdPipe } from './chat.pipes'
 
 @Controller('/chats')
 export class ChatsController {
@@ -58,7 +59,7 @@ export class ChatsController {
   @Get('/:id')
   public async findOne(
     @CurrentAuth() auth: AuthorizationPayload,
-    @Param('id', new ParseUUIDPipe()) id: string
+    @Param('id', new ChatIdPipe()) id: string
   ): Promise<ChatDTO | null> {
     return this.service.findOne(id, auth.userId)
   }
@@ -70,5 +71,14 @@ export class ChatsController {
     @Param('id', new ParseUUIDPipe()) id: string
   ): Promise<RawChat | null> {
     return this.service.findOneRaw(id, auth.userId)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/by-user/:id')
+  public async findOneByUser(
+    @CurrentAuth() auth: AuthorizationPayload,
+    @Param('id', new ParseUUIDPipe()) id: string
+  ): Promise<ChatDTO | null> {
+    return this.service.findOneByUser(id, auth.userId)
   }
 }
