@@ -10,7 +10,6 @@ export enum GetMessagesDirection {
 
 export interface ReadMyHistoryResult {
   chatId: string
-  _realChatId: string
   maxId: number
   unreadCount: number
 }

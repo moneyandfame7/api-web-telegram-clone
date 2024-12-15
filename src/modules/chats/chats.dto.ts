@@ -3,7 +3,6 @@ import { IsEnum, IsOptional, IsString, IsUUID } from 'class-validator'
 
 export class ChatDTO {
   id!: string
-  _realChatId: string
   userId?: string
   type!: ChatType
   title!: string
@@ -26,7 +25,6 @@ export class ChatDTO {
 
   public constructor(data: {
     id: string
-    _realChatId: string
     userId?: string
     type: ChatType
     title: string
@@ -46,7 +44,6 @@ export class ChatDTO {
     isOwner: boolean
   }) {
     this.id = data.id
-    this._realChatId = data._realChatId
     this.userId = data.userId
     this.type = data.type
     this.title = data.title

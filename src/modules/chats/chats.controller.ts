@@ -72,13 +72,4 @@ export class ChatsController {
   ): Promise<RawChat | null> {
     return this.service.findOneRaw(id, auth.userId)
   }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('/by-user/:id')
-  public async findOneByUser(
-    @CurrentAuth() auth: AuthorizationPayload,
-    @Param('id', new ParseUUIDPipe()) id: string
-  ): Promise<ChatDTO | null> {
-    return this.service.findOneByUser(id, auth.userId)
-  }
 }

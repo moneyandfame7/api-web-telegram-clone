@@ -9,7 +9,6 @@ import { GetMessagesDTO, MessageDTO, ReadHistoryDTO, SendMessageDTO } from './me
 import { MessageDTOMapper } from './message.mapper'
 import { InvalidEntityIdError } from '../../common/errors/common.errors'
 import { ChatsService } from '../chats/chats.service'
-import { isUserId } from '../chats/chat.helpers'
 import { ChatDTOMapper } from '../chats/chat.mapper'
 
 @Injectable()
@@ -18,6 +17,10 @@ export class MessageService {
     private readonly prisma: PrismaService,
     private readonly chatsService: ChatsService
   ) {}
+  /**
+   * тут в dto chatId може бути або UUID або `u_UUID`.
+   * `u_UUID`: використовується для приватного чату, якого ще не існує.
+   */
   async sendMessage(dto: SendMessageDTO, requesterId: string): Promise<{ chat: RawChat; message: RawMessage }> {
     const chat = await this.chatsService.findOrCreate(dto.chatId, requesterId)
     if (!chat) {
@@ -111,12 +114,11 @@ export class MessageService {
     if (!chat) {
       throw new InvalidEntityIdError()
     }
-    const realChatId = chat.id
 
     const member = await this.prisma.chatMember.findFirst({
       where: {
         userId: requesterId,
-        chatId: realChatId
+        chatId: dto.chatId
       }
     })
     if (!member) {
@@ -124,7 +126,7 @@ export class MessageService {
     }
 
     const newUnreadCount = await this.prisma.message.count({
-      where: { chatId: realChatId, senderId: { not: requesterId }, sequenceId: { gt: dto.maxId } }
+      where: { chatId: dto.chatId, senderId: { not: requesterId }, sequenceId: { gt: dto.maxId } }
     })
 
     await this.prisma.chatMember.update({
@@ -137,6 +139,6 @@ export class MessageService {
       }
     })
 
-    return { maxId: dto.maxId, chatId: dto.chatId, _realChatId: realChatId, unreadCount: newUnreadCount }
+    return { maxId: dto.maxId, chatId: dto.chatId, unreadCount: newUnreadCount }
   }
 }

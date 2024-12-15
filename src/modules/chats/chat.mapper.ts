@@ -15,8 +15,7 @@ export class ChatDTOMapper {
       ? privateChatMember.myLastReadMessageSequenceId
       : this.getTheirLastReadMessageSequenceId(raw, requesterId)
     return new ChatDTO({
-      id: privateChatUserDTO ? `u_${privateChatUserDTO.id}` : raw.id,
-      _realChatId: raw.id,
+      id: raw.id,
       userId: privateChatUserDTO?.id,
       type: raw.type,
       title,

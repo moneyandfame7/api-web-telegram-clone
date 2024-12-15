@@ -7,7 +7,6 @@ export class MessageDTO {
   id: string
   sequenceId: number
   chatId: string
-  _realChatId: string
   senderId: string
   text?: string
   createdAt: Date
@@ -19,7 +18,6 @@ export class MessageDTO {
     id: string
     sequenceId: number
     chatId: string
-    _realChatId: string
     senderId: string
     text?: string
     createdAt: Date
@@ -30,7 +28,6 @@ export class MessageDTO {
     this.id = data.id
     this.sequenceId = data.sequenceId
     this.chatId = data.chatId
-    this._realChatId = data._realChatId
     this.senderId = data.senderId
     this.text = data.text
     this.createdAt = data.createdAt
@@ -48,7 +45,7 @@ export class SendMessageDTO {
 }
 
 export class GetMessagesDTO {
-  @IsChatId()
+  @IsUUID()
   chatId: string
 
   @IsInt()
@@ -72,7 +69,7 @@ export class GetMessagesDTO {
 }
 
 export class ReadHistoryDTO {
-  @IsChatId()
+  @IsUUID()
   chatId: string
   @IsInt()
   maxId: number

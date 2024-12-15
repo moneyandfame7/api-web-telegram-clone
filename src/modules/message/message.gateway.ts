@@ -124,13 +124,13 @@ export class MessageGateway {
   }
 
   async onReadTheirHistory(data: ReadMyHistoryResult, requesterId: string, requesterSocketId: string) {
-    const sockets = await this.server.in(`chat-${data._realChatId}`).fetchSockets()
+    const sockets = await this.server.in(`chat-${data.chatId}`).fetchSockets()
     console.log(sockets.length, 'ON READ THEIR HISTORY')
     sockets.forEach(socket => {
       if (socket.data.userId === requesterId) {
         return
       }
-      socket.emit('message:read-their', { _realChatId: data._realChatId, chatId: data.chatId, maxId: data.maxId })
+      socket.emit('message:read-their', { chatId: data.chatId, maxId: data.maxId })
     })
   }
 }

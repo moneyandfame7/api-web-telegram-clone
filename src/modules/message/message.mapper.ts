@@ -9,7 +9,6 @@ export class MessageDTOMapper {
     return new MessageDTO({
       ...primaryFields,
       chatId: chatDto.id,
-      _realChatId: chatDto._realChatId,
       text: primaryFields.text ?? undefined,
       editedAt: primaryFields.editedAt ?? undefined,
       isOutgoing: primaryFields.senderId === requesterId,

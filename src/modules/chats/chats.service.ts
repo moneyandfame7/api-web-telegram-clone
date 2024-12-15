@@ -62,7 +62,12 @@ export class ChatsService {
   }
 
   public async findOne(id: string, requesterId: string): Promise<ChatDTO | null> {
-    const raw = await this.findOneRaw(id, requesterId)
+    let raw: RawChat | null
+    if (isUserId(id)) {
+      raw = await this.findOneRawByUser(id.split('u_')[1], requesterId)
+    } else {
+      raw = await this.findOneRaw(id, requesterId)
+    }
 
     if (raw) {
       return ChatDTOMapper.toDTO(raw, requesterId)
@@ -72,18 +77,12 @@ export class ChatsService {
   }
 
   public async findOneRaw(id: string, requesterId: string): Promise<RawChat | null> {
-    let raw: RawChat | null
-    if (isUserId(id)) {
-      raw = await this.findOneRawByUser(id.split('u_')[1], requesterId)
-    } else {
-      raw = await this.prisma.chat.findUnique({
-        where: {
-          id
-        },
-        include: chatInclude
-      })
-    }
-    return raw
+    return this.prisma.chat.findUnique({
+      where: {
+        id
+      },
+      include: chatInclude
+    })
   }
 
   private async findOneRawByUser(userId: string, requesterId: string) {
