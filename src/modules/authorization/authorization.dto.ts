@@ -3,6 +3,7 @@ import { /*  IsIP,  */ IsJWT, IsNotEmpty, MaxLength, MinLength, ValidateNested }
 
 export class DeviceInfoDto {
   // @IsIP()
+  @IsNotEmpty()
   ip!: string
 
   @IsNotEmpty()
@@ -38,8 +39,10 @@ export class SignUpDto {
 }
 
 export class SignInDto {
+  @IsNotEmpty()
   public readonly username!: string
 
+  @IsNotEmpty()
   public readonly password!: string
 
   @IsNotEmpty()

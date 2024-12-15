@@ -1,4 +1,4 @@
-import { PrismaClient, User } from '@prisma/client'
+import { Chat, PrismaClient, User } from '@prisma/client'
 import { faker } from '@faker-js/faker'
 import { JwtService } from '@nestjs/jwt'
 import { hash } from 'bcrypt'
@@ -50,7 +50,7 @@ class Seeder {
     }
   }
 
-  async createUsers(count = 100) {
+  async createUsers(count = 20) {
     for (let k = 0; k < count; k++) {
       const password = await hash(faker.internet.password(), 3)
       await prisma.user.create({
@@ -66,18 +66,41 @@ class Seeder {
     console.log(`✅ Create ${count} users`)
   }
 
-  async createChatsAndConnect(count = 20) {
+  private generateMessages(chat: Chat, users: [User, User, User]) {
+    const MSG_COUNT = 100
+    return Array.from({ length: MSG_COUNT }).map((_, index) => ({
+      senderId: index % 4 === 0 ? users[0].id : index % 3 === 0 ? users[1].id : users[2].id,
+      sequenceId: index,
+      text: faker.lorem.paragraph({ min: 1, max: 5 }),
+      lastInChatId: index === MSG_COUNT - 1 ? chat.id : undefined,
+      firstInChatId: index === 0 ? chat.id : undefined
+    }))
+  }
+
+  async createChats(count = 20) {
+    const admin = await prisma.user.findUniqueOrThrow({ where: { username: 'admin' } })
+    const user1 = await prisma.user.findUniqueOrThrow({ where: { username: 'user1' } })
+    const user2 = await prisma.user.findUniqueOrThrow({ where: { username: 'user2' } })
+
     for (let k = 0; k < count; k++) {
-      await prisma.chat.create({
+      const chat = await prisma.chat.create({
         data: {
           title: faker.internet.displayName(),
           type: 'GROUP',
           color: getRandomElement(CHAT_COLORS),
-          isSavedMessages: false,
+          isSavedMessages: false
+        }
+      })
+      await prisma.chat.update({
+        where: { id: chat.id },
+        data: {
+          messages: {
+            create: this.generateMessages(chat, [admin, user1, user2])
+          },
           members: {
-            create: this.mockAccounts.map((user, i) => ({
+            create: [admin, user1, user2].map(user => ({
               userId: user.id,
-              isOwner: getRandomElement(this.mockAccounts).id === user.id
+              isOwner: user.username === 'admin'
             }))
           }
         }
@@ -96,8 +119,7 @@ async function main() {
   await seed.createMockAccount({ firstName: 'User3', username: 'user3', password: '12345678', withSessions: false })
   await seed.createMockAccount({ firstName: 'User4', username: 'user4', password: '12345678', withSessions: false })
   await seed.createMockAccount({ firstName: 'User5', username: 'user5', password: '12345678', withSessions: false })
-  // await seed.createUsers()
-  // await seed.createChatsAndConnect()
+  await seed.createChats()
 }
 
 main()

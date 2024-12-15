@@ -1,4 +1,4 @@
-import { Chat, ChatMember } from '@prisma/client'
+import { Chat, ChatMember, Message } from '@prisma/client'
 import { RawUser } from '../user/user.types'
 
 export interface RawChat extends Chat {
@@ -10,4 +10,6 @@ export interface RawChat extends Chat {
   _count: {
     members: number
   }
+  lastMessage: Message | null
+  firstMessage: Message | null
 }

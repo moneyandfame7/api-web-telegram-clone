@@ -1,35 +1,44 @@
-import { Injectable } from '@nestjs/common'
-import { SendMessageDTO } from './message.dto'
-import { RawChat } from '../chats/chats.types'
-import { RawMessage } from './message.types'
+import { BadRequestException, Injectable } from '@nestjs/common'
 import { PrismaService } from '../../prisma/prisma.service'
+
+import { RawChat } from '../chats/chats.types'
 import { chatInclude } from '../chats/chat.constants'
+
+import { GetMessagesDirection, RawMessage, ReadMyHistoryResult } from './message.types'
+import { GetMessagesDTO, MessageDTO, ReadHistoryDTO, SendMessageDTO } from './message.dto'
+import { MessageDTOMapper } from './message.mapper'
+import { InvalidEntityIdError } from '../../common/errors/common.errors'
+import { ChatsService } from '../chats/chats.service'
+import { isUserId } from '../chats/chat.helpers'
+import { ChatDTOMapper } from '../chats/chat.mapper'
 
 @Injectable()
 export class MessageService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly chatsService: ChatsService
+  ) {}
   async sendMessage(dto: SendMessageDTO, requesterId: string): Promise<{ chat: RawChat; message: RawMessage }> {
-    const chatToUpdate = await this.prisma.chat.findUniqueOrThrow({
-      where: {
-        id: dto.chatId
-      },
-      include: {
-        ...chatInclude
+    const chat = await this.chatsService.findOrCreate(dto.chatId, requesterId)
+    if (!chat) {
+      throw new InvalidEntityIdError()
+    }
+    const message = await this.prisma.message.create({
+      data: {
+        chatId: chat.id,
+        text: dto.text,
+        sequenceId: chat.lastMessage?.sequenceId !== undefined ? chat.lastMessage.sequenceId + 1 : 0,
+        senderId: requesterId
       }
     })
+
     const updatedChat = await this.prisma.chat.update({
-      where: {
-        id: chatToUpdate.id
-      },
+      where: { id: chat.id },
       data: {
-        lastMessage: {
-          create: {
-            text: dto.text,
-            orderedId: chatToUpdate.lastMessage?.orderedId ?? 1,
-            chatId: dto.chatId,
-            senderId: requesterId
-          }
-        }
+        ...(!chat.firstMessage && {
+          firstMessage: { connect: { id: message.id } }
+        }),
+        lastMessage: { connect: { id: message.id } }
       },
       include: chatInclude
     })
@@ -37,15 +46,97 @@ export class MessageService {
     return { message: updatedChat.lastMessage!, chat: updatedChat }
   }
 
-  findAll() {
-    return `This action returns all message`
+  public async getMessages(dto: GetMessagesDTO, requesterId: string): Promise<MessageDTO[]> {
+    const chat = await this.chatsService.findOneRaw(dto.chatId, requesterId)
+
+    if (!chat) {
+      throw new InvalidEntityIdError()
+    }
+    if (dto.direction === GetMessagesDirection.AROUND) {
+      if (dto.sequenceId === undefined) {
+        throw new BadRequestException('Sequence id is not provided')
+      }
+      const halfLimit = Math.round(dto.limit / 2)
+      const older = await this.prisma.message.findMany({
+        where: { chatId: chat.id },
+        orderBy: { sequenceId: 'asc' },
+        take: -halfLimit,
+        skip: 0,
+        // ...(dto.sequenceId && {
+        cursor: {
+          compositeSequenceId: { chatId: chat.id, sequenceId: dto.sequenceId }
+        }
+        // })
+      })
+      const newer = await this.prisma.message.findMany({
+        where: { chatId: chat.id },
+        orderBy: { sequenceId: 'asc' },
+        take: halfLimit,
+        skip: 1,
+        ...(dto.sequenceId && {
+          cursor: {
+            compositeSequenceId: { chatId: chat.id, sequenceId: dto.sequenceId }
+          }
+        })
+      })
+      const chatDto = ChatDTOMapper.toDTO(chat, requesterId)
+      return MessageDTOMapper.toDTOList([...older, ...newer], chatDto, requesterId)
+    }
+
+    if (dto.direction === GetMessagesDirection.OLDER && dto.sequenceId === 0) {
+      return []
+    }
+    console.log(dto)
+    const raws = await this.prisma.message.findMany({
+      where: {
+        chatId: chat.id
+      },
+      orderBy: { sequenceId: 'asc' },
+      take: dto.direction === GetMessagesDirection.OLDER ? -dto.limit : +dto.limit,
+      skip: dto.skipCursor === false ? 0 : dto.sequenceId !== undefined ? 1 : 0,
+      ...(dto.sequenceId && {
+        cursor: {
+          compositeSequenceId: { chatId: chat.id, sequenceId: dto.sequenceId }
+        }
+      })
+    })
+    const chatDto = ChatDTOMapper.toDTO(chat, requesterId)
+
+    return MessageDTOMapper.toDTOList(raws, chatDto, requesterId)
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} message`
-  }
+  public async readHistory(dto: ReadHistoryDTO, requesterId: string): Promise<ReadMyHistoryResult> {
+    const chat = await this.chatsService.findOneRaw(dto.chatId, requesterId)
 
-  remove(id: number) {
-    return `This action removes a #${id} message`
+    if (!chat) {
+      throw new InvalidEntityIdError()
+    }
+    const realChatId = chat.id
+
+    const member = await this.prisma.chatMember.findFirst({
+      where: {
+        userId: requesterId,
+        chatId: realChatId
+      }
+    })
+    if (!member) {
+      throw new InvalidEntityIdError()
+    }
+
+    const newUnreadCount = await this.prisma.message.count({
+      where: { chatId: realChatId, senderId: { not: requesterId }, sequenceId: { gt: dto.maxId } }
+    })
+
+    await this.prisma.chatMember.update({
+      where: {
+        id: member.id
+      },
+      data: {
+        myLastReadMessageSequenceId: dto.maxId,
+        unreadCount: newUnreadCount
+      }
+    })
+
+    return { maxId: dto.maxId, chatId: dto.chatId, _realChatId: realChatId, unreadCount: newUnreadCount }
   }
 }

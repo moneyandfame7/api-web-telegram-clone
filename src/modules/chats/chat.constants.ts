@@ -10,6 +10,7 @@ export const chatInclude = {
     }
   },
   lastMessage: true,
+  firstMessage: true,
   _count: {
     select: {
       members: true

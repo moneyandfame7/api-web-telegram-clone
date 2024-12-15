@@ -1,9 +1,13 @@
-import { IsString, IsUUID } from 'class-validator'
+import { IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator'
+import { GetMessagesDirection } from './message.types'
+import { Transform, Type } from 'class-transformer'
+import { IsChatId } from '../chats/chat.pipes'
 
 export class MessageDTO {
   id: string
-  orderedId: number
+  sequenceId: number
   chatId: string
+  _realChatId: string
   senderId: string
   text?: string
   createdAt: Date
@@ -13,8 +17,9 @@ export class MessageDTO {
   isSilent: boolean
   constructor(data: {
     id: string
-    orderedId: number
+    sequenceId: number
     chatId: string
+    _realChatId: string
     senderId: string
     text?: string
     createdAt: Date
@@ -23,8 +28,9 @@ export class MessageDTO {
     isSilent: boolean
   }) {
     this.id = data.id
-    this.orderedId = data.orderedId
+    this.sequenceId = data.sequenceId
     this.chatId = data.chatId
+    this._realChatId = data._realChatId
     this.senderId = data.senderId
     this.text = data.text
     this.createdAt = data.createdAt
@@ -34,8 +40,40 @@ export class MessageDTO {
   }
 }
 export class SendMessageDTO {
-  @IsUUID()
+  @IsChatId()
   chatId: string
+
   @IsString()
   text: string
+}
+
+export class GetMessagesDTO {
+  @IsChatId()
+  chatId: string
+
+  @IsInt()
+  @IsOptional()
+  @Type(() => Number)
+  sequenceId?: number
+
+  @IsBoolean()
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true || value === 1)
+  skipCursor: boolean = true
+
+  @IsEnum(GetMessagesDirection)
+  @IsOptional()
+  direction: GetMessagesDirection = GetMessagesDirection.OLDER
+
+  @Type(() => Number)
+  @IsNumber()
+  @IsOptional()
+  limit: number = 20
+}
+
+export class ReadHistoryDTO {
+  @IsChatId()
+  chatId: string
+  @IsInt()
+  maxId: number
 }

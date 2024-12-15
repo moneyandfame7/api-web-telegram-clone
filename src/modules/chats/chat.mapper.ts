@@ -9,9 +9,11 @@ export class ChatDTOMapper {
     const requesterChatMember = this.getChatMember(raw, requesterId)
     const isJoined = this.isJoined(requesterChatMember)
     const privateChatUserDTO = raw.type === 'PRIVATE' ? this.getPrivateChatUserDTO(raw, requesterId) : undefined
-
+    const privateChatMember = privateChatUserDTO ? this.getChatMember(raw, privateChatUserDTO.id) : undefined
     const title = raw.isSavedMessages ? 'Saved Messages' : privateChatUserDTO?.fullName || raw.title
-
+    const theirLastReadMessageSequenceId = privateChatMember
+      ? privateChatMember.myLastReadMessageSequenceId
+      : this.getTheirLastReadMessageSequenceId(raw, requesterId)
     return new ChatDTO({
       id: privateChatUserDTO ? `u_${privateChatUserDTO.id}` : raw.id,
       _realChatId: raw.id,
@@ -22,6 +24,11 @@ export class ChatDTOMapper {
       color: raw.color,
       createdAt: raw.createdAt,
       membersCount: raw._count.members,
+      firstMessageSequenceId: raw.firstMessage?.sequenceId ?? undefined,
+      lastMessageSequenceId: raw.lastMessage?.sequenceId ?? undefined,
+      myLastReadMessageSequenceId: requesterChatMember?.myLastReadMessageSequenceId ?? undefined,
+      theirLastReadMessageSequenceId: theirLastReadMessageSequenceId ?? undefined,
+      unreadCount: requesterChatMember?.unreadCount ?? 0,
       isSavedMessages: raw.isSavedMessages,
       isPinned: isJoined ? requesterChatMember.isPinned : false,
       isArchived: isJoined ? requesterChatMember.isArchived : false,
@@ -34,8 +41,18 @@ export class ChatDTOMapper {
     return raws.map(raw => this.toDTO(raw, requesterId))
   }
 
-  private static getChatMember(raw: RawChat, requesterId: string): ChatMember | undefined {
-    return raw.members.find(member => member.userId === requesterId)
+  private static getChatMember(raw: RawChat, userId: string): ChatMember | undefined {
+    return raw.members.find(member => member.userId === userId)
+  }
+
+  private static getTheirLastReadMessageSequenceId(raw: RawChat, requesterId: string): number | undefined {
+    const membersExceptRequester = raw.members.filter(member => member.userId !== requesterId)
+
+    const membersLastReadMessageSequenceId = membersExceptRequester
+      .map(member => member.myLastReadMessageSequenceId)
+      .filter(v => v !== null)
+
+    return membersLastReadMessageSequenceId.length ? Math.max(...membersLastReadMessageSequenceId, 0) : undefined
   }
 
   private static isJoined(member: ChatMember | undefined): member is ChatMember {

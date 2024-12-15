@@ -6,6 +6,7 @@ import { ChatDTOMapper } from './chat.mapper'
 import { RawChat } from './chats.types'
 import { PrismaService } from '../../prisma/prisma.service'
 import { getRandomElement } from '../../common/helpers'
+import { isUserId } from './chat.helpers'
 
 @Injectable()
 export class ChatsService {
@@ -61,20 +62,7 @@ export class ChatsService {
   }
 
   public async findOne(id: string, requesterId: string): Promise<ChatDTO | null> {
-    // спробувати include для чату, шоб отримувати не всіх мемберів, а тільки одного ( оптимізація тіпа я хз як це придумати)
-    const raw: RawChat | null = await this.prisma.chat.findUnique({
-      where: {
-        id
-      },
-      include: {
-        ...chatInclude,
-        _count: {
-          select: {
-            members: true
-          }
-        }
-      }
-    })
+    const raw = await this.findOneRaw(id, requesterId)
 
     if (raw) {
       return ChatDTOMapper.toDTO(raw, requesterId)
@@ -84,11 +72,56 @@ export class ChatsService {
   }
 
   public async findOneRaw(id: string, requesterId: string): Promise<RawChat | null> {
-    return this.prisma.chat.findUnique({
+    let raw: RawChat | null
+    if (isUserId(id)) {
+      raw = await this.findOneRawByUser(id.split('u_')[1], requesterId)
+    } else {
+      raw = await this.prisma.chat.findUnique({
+        where: {
+          id
+        },
+        include: chatInclude
+      })
+    }
+    return raw
+  }
+
+  private async findOneRawByUser(userId: string, requesterId: string) {
+    return this.prisma.chat.findFirst({
       where: {
-        id
+        type: 'PRIVATE',
+        members: {
+          some: {
+            userId
+          }
+        },
+        AND: {
+          members: {
+            some: { userId: requesterId }
+          }
+        }
       },
       include: chatInclude
     })
+  }
+
+  public async findOneByUser(userId: string, requesterId: string) {
+    const raw = await this.findOneRawByUser(userId, requesterId)
+
+    if (raw) {
+      return ChatDTOMapper.toDTO(raw, requesterId)
+    }
+    return null
+  }
+
+  public async findOrCreate(chatId: string, requesterId: string) {
+    if (isUserId(chatId)) {
+      const userId = chatId.split('u_')[1]
+      const chat = await this.findOneRawByUser(userId, requesterId)
+
+      return chat || (await this.createOne(requesterId, { title: 'PRIVATE_CHAT', type: 'PRIVATE', users: [userId] }))
+    }
+
+    return this.findOneRaw(chatId, requesterId)
   }
 }
