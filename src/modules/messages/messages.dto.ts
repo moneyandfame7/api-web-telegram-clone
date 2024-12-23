@@ -1,5 +1,5 @@
 import { IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator'
-import { GetMessagesDirection } from './message.types'
+import { GetMessagesDirection } from './messages.types'
 import { Transform, Type } from 'class-transformer'
 import { IsChatId } from '../chats/chat.pipes'
 

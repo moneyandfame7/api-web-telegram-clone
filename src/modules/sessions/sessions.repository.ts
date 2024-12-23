@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common'
 import { Prisma, Session } from '@prisma/client'
 
-import { CreateSessionDto } from './session.dto'
+import { CreateSessionDto } from './sessions.dto'
 import { PrismaService } from '../../prisma/prisma.service'
 
 @Injectable()
-export class SessionRepository {
+export class SessionsRepository {
   public constructor(private readonly prisma: PrismaService) {}
 
   public async createOne(data: CreateSessionDto, userId: string) {

@@ -3,12 +3,12 @@ import { JwtModule } from '@nestjs/jwt'
 
 import { AuthorizationController } from './authorization.controller'
 import { AuthorizationService } from './authorization.service'
-import { UserModule } from '../user/user.module'
-import { SessionModule } from '../session/session.module'
+import { UsersModule } from '../users/users.module'
+import { SessionsModule } from '../sessions/sessions.module'
 
 @Global()
 @Module({
-  imports: [UserModule, JwtModule.register({ global: true }), SessionModule],
+  imports: [UsersModule, JwtModule.register({ global: true }), SessionsModule],
   controllers: [AuthorizationController],
   providers: [AuthorizationService],
   exports: [AuthorizationService]

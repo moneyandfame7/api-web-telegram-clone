@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing'
 
-import { UserService } from '../../src/modules/user/user.service'
-import { UserDTO } from '../../src/modules/user/user.dto'
-import { RawUser } from '../../src/modules/user/user.types'
-import { UserRepository } from '../../src/modules/user/user.repository'
-import { UserDTOMapper } from '../../src/modules/user/user.mapper'
+import { UsersService } from '../../src/modules/users/users.service'
+import { UserDTO } from '../../src/modules/users/users.dto'
+import { RawUser } from '../../src/modules/users/users.types'
+import { UsersRepository } from '../../src/modules/users/users.repository'
+import { UserDTOMapper } from '../../src/modules/users/users.mapper'
 
 describe('UserService', () => {
-  let mockUserService: UserService
+  let mockUserService: UsersService
   const mockUserRepository = {
     findWhere: jest.fn(),
     create: jest.fn(),
@@ -38,15 +38,15 @@ describe('UserService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        UserService,
+        UsersService,
         {
-          provide: UserRepository,
+          provide: UsersRepository,
           useValue: mockUserRepository
         }
       ]
     }).compile()
 
-    mockUserService = module.get(UserService)
+    mockUserService = module.get(UsersService)
   })
 
   afterEach(() => {

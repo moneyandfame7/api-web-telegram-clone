@@ -2,10 +2,10 @@ import { ContactsRepository } from './contacts.repository'
 import { Module } from '@nestjs/common'
 import { ContactsController } from './contacts.controller'
 import { ContactsService } from './contacts.service'
-import { UserModule } from '../user/user.module'
+import { UsersModule } from '../users/users.module'
 
 @Module({
-  imports: [UserModule],
+  imports: [UsersModule],
   controllers: [ContactsController],
   providers: [ContactsRepository, ContactsService]
 })

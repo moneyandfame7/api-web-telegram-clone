@@ -1,6 +1,6 @@
 import { ChatColor, ChatType } from '@prisma/client'
 import { IsEnum, IsOptional, IsString, IsUUID } from 'class-validator'
-import { MessageDTO } from '../message/message.dto'
+import { MessageDTO } from '../messages/messages.dto'
 
 export class ChatDTO {
   id!: string

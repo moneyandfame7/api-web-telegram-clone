@@ -6,16 +6,16 @@ import * as bcrypt from 'bcrypt'
 import { DeviceInfoDto, SignInDto, SignUpDto } from './authorization.dto'
 import { AuthorizationPayload, AuthorizationResult, JwtAccessPayload, JwtRefreshPayload } from './authorization.types'
 
-import { UserService } from '../user/user.service'
-import { SessionService } from '../session/session.service'
-import { RawUser } from '../user/user.types'
+import { UsersService } from '../users/users.service'
+import { SessionsService } from '../sessions/sessions.service'
+import { RawUser } from '../users/users.types'
 
 @Injectable()
 export class AuthorizationService {
   constructor(
-    private readonly userService: UserService,
+    private readonly userService: UsersService,
     private jwtService: JwtService,
-    private readonly sessionService: SessionService
+    private readonly sessionService: SessionsService
   ) {}
 
   async signUp(dto: SignUpDto): Promise<AuthorizationResult> {

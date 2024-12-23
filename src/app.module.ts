@@ -4,16 +4,25 @@ import { AppController } from './app.controller'
 import { AppService } from './app.service'
 
 import { ChatsModule } from './modules/chats/chats.module'
-import { UserModule } from './modules/user/user.module'
+import { UsersModule } from './modules/users/users.module'
 import { AuthorizationModule } from './modules/authorization/authorization.module'
-import { SessionModule } from './modules/session/session.module'
+import { SessionsModule } from './modules/sessions/sessions.module'
 import { PrismaModule } from './prisma/prisma.module'
 import { ContactsModule } from './modules/contacts/contacts.module'
 import { GatewayModule } from './gateway/gateway.module'
-import { MessageModule } from './modules/message/message.module';
+import { MessagesModule } from './modules/messages/messages.module'
 
 @Module({
-  imports: [PrismaModule, GatewayModule, SessionModule, AuthorizationModule, ChatsModule, UserModule, ContactsModule, MessageModule],
+  imports: [
+    PrismaModule,
+    GatewayModule,
+    SessionsModule,
+    AuthorizationModule,
+    ChatsModule,
+    UsersModule,
+    ContactsModule,
+    MessagesModule
+  ],
   controllers: [AppController],
   providers: [AppService]
 })

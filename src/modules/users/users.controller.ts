@@ -1,17 +1,20 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common'
-import { UserService } from './user.service'
-import { CheckUsernameDto, UserDTO } from './user.dto'
+import { UsersService } from './users.service'
+import { CheckUsernameDto, UserDTO } from './users.dto'
 import { JwtAuthGuard } from '../authorization/authorization.guard'
 import { CurrentAuth } from '../authorization/authorization.decorator'
 import { AuthorizationPayload } from '../authorization/authorization.types'
 
 @Controller('users')
-export class UserController {
-  constructor(private readonly service: UserService) {}
+export class UsersController {
+  constructor(private readonly service: UsersService) {}
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  public async getUser(@CurrentAuth() auth: AuthorizationPayload, @Param('id', new ParseUUIDPipe()) id: string): Promise<UserDTO | null> {
+  public async getUser(
+    @CurrentAuth() auth: AuthorizationPayload,
+    @Param('id', new ParseUUIDPipe()) id: string
+  ): Promise<UserDTO | null> {
     return this.service.findWhere({ id }, auth.userId)
   }
 

@@ -4,14 +4,14 @@ import { PrismaService } from '../../prisma/prisma.service'
 import { RawChat } from '../chats/chats.types'
 import { chatInclude } from '../chats/chat.constants'
 
-import { GetMessagesDirection, RawMessage, ReadMyHistoryResult } from './message.types'
-import { GetMessagesDTO, MessageDTO, ReadHistoryDTO, SendMessageDTO } from './message.dto'
-import { MessageDTOMapper } from './message.mapper'
+import { GetMessagesDirection, RawMessage, ReadMyHistoryResult } from './messages.types'
+import { GetMessagesDTO, MessageDTO, ReadHistoryDTO, SendMessageDTO } from './messages.dto'
+import { MessageDTOMapper } from './messages.mapper'
 import { InvalidEntityIdError } from '../../common/errors/common.errors'
 import { ChatsService } from '../chats/chats.service'
 
 @Injectable()
-export class MessageService {
+export class MessagesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly chatsService: ChatsService

@@ -1,5 +1,5 @@
-import { UserDTOMapper } from '../../src/modules/user/user.mapper'
-import { RawUser } from '../../src/modules/user/user.types'
+import { UserDTOMapper } from '../../src/modules/users/users.mapper'
+import { RawUser } from '../../src/modules/users/users.types'
 
 describe('UserDTOMapper', () => {
   const mockUserRaw: RawUser = {

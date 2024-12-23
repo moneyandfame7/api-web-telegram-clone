@@ -1,9 +1,9 @@
 import { ChatMember } from '@prisma/client'
 import { ChatDTO } from './chats.dto'
 import { RawChat } from './chats.types'
-import { UserDTOMapper } from '../user/user.mapper'
-import { UserDTO } from '../user/user.dto'
-import { MessageDTOMapper } from '../message/message.mapper'
+import { UserDTOMapper } from '../users/users.mapper'
+import { UserDTO } from '../users/users.dto'
+import { MessageDTOMapper } from '../messages/messages.mapper'
 
 export class ChatDTOMapper {
   public static toDTO(raw: RawChat, requesterId: string): ChatDTO {

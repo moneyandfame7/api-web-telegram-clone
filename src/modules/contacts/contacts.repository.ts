@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { AddContactDto } from './contacts.dto'
-import { userIncludes } from '../user/user.constants'
+import { userIncludes } from '../users/users.constants'
 import { RawContact } from './contacts.types'
 import { PrismaService } from '../../prisma/prisma.service'
 

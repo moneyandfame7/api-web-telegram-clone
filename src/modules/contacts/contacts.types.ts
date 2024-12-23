@@ -1,5 +1,5 @@
 import { Contact } from '@prisma/client'
-import { RawUser } from '../user/user.types'
+import { RawUser } from '../users/users.types'
 
 export interface RawContact extends Contact {
   contact: RawUser

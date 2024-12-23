@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { MessageService } from '../../src/modules/message/message.service'
-import { GetMessagesDirection, RawMessage } from '../../src/modules/message/message.types'
-import { GetMessagesDTO } from '../../src/modules/message/message.dto'
+import { MessagesService } from '../../src/modules/messages/messages.service'
+import { GetMessagesDirection, RawMessage } from '../../src/modules/messages/messages.types'
+import { GetMessagesDTO } from '../../src/modules/messages/messages.dto'
 import { PrismaService } from '../../src/prisma/prisma.service'
 import { BadRequestException } from '@nestjs/common'
 
@@ -17,12 +17,12 @@ const mockPrisma = {
   }
 }
 describe('MessageService', () => {
-  let mockMessageService: MessageService
+  let mockMessageService: MessagesService
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        MessageService,
+        MessagesService,
         {
           provide: PrismaService,
           useValue: mockPrisma
@@ -30,7 +30,7 @@ describe('MessageService', () => {
       ]
     }).compile()
 
-    mockMessageService = module.get(MessageService)
+    mockMessageService = module.get(MessagesService)
   })
 
   afterEach(() => {

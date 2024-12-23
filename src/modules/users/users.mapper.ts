@@ -1,6 +1,6 @@
 import { Contact } from '@prisma/client'
-import { UserDTO } from './user.dto'
-import { RawUser } from './user.types'
+import { UserDTO } from './users.dto'
+import { RawUser } from './users.types'
 
 /**
  * Кешування:

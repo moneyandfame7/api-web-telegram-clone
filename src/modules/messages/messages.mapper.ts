@@ -1,6 +1,6 @@
 import { ChatDTO } from '../chats/chats.dto'
-import { MessageDTO } from './message.dto'
-import { RawMessage } from './message.types'
+import { MessageDTO } from './messages.dto'
+import { RawMessage } from './messages.types'
 
 export class MessageDTOMapper {
   public static toDTO(raw: RawMessage, requesterId: string): MessageDTO {

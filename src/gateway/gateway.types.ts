@@ -1,7 +1,7 @@
 import { Server, Socket } from 'socket.io'
 import { ChatDTO } from '../modules/chats/chats.dto'
-import { MessageDTO } from '../modules/message/message.dto'
-import { ReadMyHistoryResult, ReadTheirHistoryResult } from '../modules/message/message.types'
+import { MessageDTO } from '../modules/messages/messages.dto'
+import { ReadMyHistoryResult, ReadTheirHistoryResult } from '../modules/messages/messages.types'
 
 export interface ListenEvents {}
 

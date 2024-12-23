@@ -1,4 +1,4 @@
 import { Controller } from '@nestjs/common'
 
 @Controller('/sessions')
-export class SessionController {}
+export class SessionsController {}

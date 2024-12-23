@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { ConflictException, NotFoundException } from '@nestjs/common'
 
-import { UserService } from '../../src/modules/user/user.service'
-import { UserDTOMapper } from '../../src/modules/user/user.mapper'
-import { UserDTO } from '../../src/modules/user/user.dto'
-import { RawUser } from '../../src/modules/user/user.types'
+import { UsersService } from '../../src/modules/users/users.service'
+import { UserDTOMapper } from '../../src/modules/users/users.mapper'
+import { UserDTO } from '../../src/modules/users/users.dto'
+import { RawUser } from '../../src/modules/users/users.types'
 
 import { ContactsService } from '../../src/modules/contacts/contacts.service'
 import { ContactsRepository } from '../../src/modules/contacts/contacts.repository'
@@ -68,7 +68,7 @@ describe('ContactService', () => {
           useValue: mockContactRepository
         },
         {
-          provide: UserService,
+          provide: UsersService,
           useValue: mockUserService
         }
       ]

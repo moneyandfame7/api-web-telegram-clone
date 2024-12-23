@@ -1,5 +1,5 @@
 import type { ChatColor, Prisma } from '@prisma/client'
-import { userIncludes } from '../user/user.constants'
+import { userIncludes } from '../users/users.constants'
 
 export const chatInclude = {
   members: {

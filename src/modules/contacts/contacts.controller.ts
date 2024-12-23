@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common'
 
-import { UserDTO } from './../user/user.dto'
+import { UserDTO } from '../users/users.dto'
 
 import { JwtAuthGuard } from '../authorization/authorization.guard'
 import { CurrentAuth } from '../authorization/authorization.decorator'

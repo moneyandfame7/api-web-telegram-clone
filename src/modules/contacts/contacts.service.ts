@@ -1,15 +1,15 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { AddContactDto } from './contacts.dto'
-import { UserService } from '../user/user.service'
-import { UserDTO } from '../user/user.dto'
-import { UserDTOMapper } from '../user/user.mapper'
+import { UsersService } from '../users/users.service'
+import { UserDTO } from '../users/users.dto'
+import { UserDTOMapper } from '../users/users.mapper'
 import { ContactsRepository } from './contacts.repository'
 
 @Injectable()
 export class ContactsService {
   public constructor(
     private repository: ContactsRepository,
-    private usersService: UserService
+    private usersService: UsersService
   ) {}
 
   public async createOne(dto: AddContactDto, requesterId: string): Promise<UserDTO> {

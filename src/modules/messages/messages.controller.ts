@@ -4,12 +4,12 @@ import { JwtAuthGuard } from '../authorization/authorization.guard'
 import { CurrentAuth } from '../authorization/authorization.decorator'
 import { AuthorizationPayload } from '../authorization/authorization.types'
 
-import { MessageService } from './message.service'
-import { GetMessagesDTO, MessageDTO } from './message.dto'
+import { MessagesService } from './messages.service'
+import { GetMessagesDTO, MessageDTO } from './messages.dto'
 
 @Controller('/messages')
-export class MessageController {
-  constructor(private messageService: MessageService) {}
+export class MessagesController {
+  constructor(private service: MessagesService) {}
 
   @UseGuards(JwtAuthGuard)
   @Get()
@@ -17,6 +17,6 @@ export class MessageController {
     @CurrentAuth() auth: AuthorizationPayload,
     @Query() dto: GetMessagesDTO
   ): Promise<MessageDTO[]> {
-    return this.messageService.getMessages(dto, auth.userId)
+    return this.service.getMessages(dto, auth.userId)
   }
 }

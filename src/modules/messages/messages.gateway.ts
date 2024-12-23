@@ -1,29 +1,26 @@
 import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer, ConnectedSocket } from '@nestjs/websockets'
-import { Server } from 'socket.io'
 import { UseFilters, UsePipes } from '@nestjs/common'
 
 import { GatewayValidationPipe, WsExceptionFilter } from '../../gateway/gateway-vadliation.pipe'
-import { MessageService } from './message.service'
-import { MessageDTO, ReadHistoryDTO, SendMessageDTO } from './message.dto'
+import { MessagesService } from './messages.service'
+import { MessageDTO, ReadHistoryDTO, SendMessageDTO } from './messages.dto'
 import { TypedSocket, TypedServer } from '../../gateway/gateway.types'
 import { Gateway } from '../../gateway/gateway'
-import { RawMessage, ReadMyHistoryResult } from './message.types'
+import { RawMessage, ReadMyHistoryResult } from './messages.types'
 import { RawChat } from '../chats/chats.types'
-import { MessageDTOMapper } from './message.mapper'
+import { MessageDTOMapper } from './messages.mapper'
 import { ChatDTOMapper } from '../chats/chat.mapper'
 import { ChatDTO } from '../chats/chats.dto'
-import { ChatGateway } from '../chats/chats.gateway'
 
 @UsePipes(GatewayValidationPipe)
 @UseFilters(WsExceptionFilter)
 @WebSocketGateway({ cors: true })
-export class MessageGateway {
+export class MessagesGateway {
   @WebSocketServer() server: TypedServer
 
   constructor(
     private readonly gateway: Gateway,
-    private readonly chatsGateway: ChatGateway,
-    private readonly messageService: MessageService
+    private readonly messageService: MessagesService
   ) {}
 
   @SubscribeMessage('sendMessage')
