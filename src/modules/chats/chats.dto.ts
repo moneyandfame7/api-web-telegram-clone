@@ -1,5 +1,6 @@
 import { ChatColor, ChatType } from '@prisma/client'
 import { IsEnum, IsOptional, IsString, IsUUID } from 'class-validator'
+import { MessageDTO } from '../message/message.dto'
 
 export class ChatDTO {
   id!: string
@@ -11,8 +12,7 @@ export class ChatDTO {
   createdAt!: Date
   membersCount!: number
   firstMessageSequenceId?: number
-  lastMessageSequenceId?: number
-
+  lastMessage?: MessageDTO
   myLastReadMessageSequenceId?: number
   theirLastReadMessageSequenceId?: number
   unreadCount: number
@@ -33,7 +33,7 @@ export class ChatDTO {
     createdAt: Date
     membersCount: number
     firstMessageSequenceId?: number
-    lastMessageSequenceId?: number
+    lastMessage?: MessageDTO
     myLastReadMessageSequenceId?: number
     theirLastReadMessageSequenceId?: number
     unreadCount: number
@@ -52,7 +52,7 @@ export class ChatDTO {
     this.createdAt = data.createdAt
     this.membersCount = data.membersCount
     this.firstMessageSequenceId = data.firstMessageSequenceId
-    this.lastMessageSequenceId = data.lastMessageSequenceId
+    this.lastMessage = data.lastMessage
     this.myLastReadMessageSequenceId = data.myLastReadMessageSequenceId
     this.theirLastReadMessageSequenceId = data.theirLastReadMessageSequenceId
     this.unreadCount = data.unreadCount

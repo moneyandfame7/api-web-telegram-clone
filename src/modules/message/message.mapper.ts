@@ -3,12 +3,11 @@ import { MessageDTO } from './message.dto'
 import { RawMessage } from './message.types'
 
 export class MessageDTOMapper {
-  public static toDTO(raw: RawMessage, chatDto: ChatDTO, requesterId: string): MessageDTO {
+  public static toDTO(raw: RawMessage, requesterId: string): MessageDTO {
     const { lastInChatId, ...primaryFields } = raw
 
     return new MessageDTO({
       ...primaryFields,
-      chatId: chatDto.id,
       text: primaryFields.text ?? undefined,
       editedAt: primaryFields.editedAt ?? undefined,
       isOutgoing: primaryFields.senderId === requesterId,
@@ -16,7 +15,7 @@ export class MessageDTOMapper {
     })
   }
 
-  public static toDTOList(raws: RawMessage[], chatDto: ChatDTO, requesterId: string): MessageDTO[] {
-    return raws.map(raw => this.toDTO(raw, chatDto, requesterId))
+  public static toDTOList(raws: RawMessage[], requesterId: string): MessageDTO[] {
+    return raws.map(raw => this.toDTO(raw, requesterId))
   }
 }

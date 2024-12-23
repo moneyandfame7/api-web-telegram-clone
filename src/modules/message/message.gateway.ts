@@ -35,7 +35,7 @@ export class MessageGateway {
     this.onNewMessage(message, chat, client.id)
 
     const chatDto = ChatDTOMapper.toDTO(chat, client.userId)
-    const messageDto = MessageDTOMapper.toDTO(message, chatDto, client.userId)
+    const messageDto = MessageDTOMapper.toDTO(message, client.userId)
 
     return { message: messageDto, chat: chatDto }
   }
@@ -53,7 +53,7 @@ export class MessageGateway {
           return
         }
         const chatDto = ChatDTOMapper.toDTO(chat, member.userId)
-        const messageDto = MessageDTOMapper.toDTO(message, chatDto, member.userId)
+        const messageDto = MessageDTOMapper.toDTO(message, member.userId)
         // Clients - Це всі поточні підʼєднання користувачів
         clients.forEach(info => {
           // не емітимо евент для сокету, який створив чат
@@ -73,7 +73,7 @@ export class MessageGateway {
       }
 
       const chatDto = ChatDTOMapper.toDTO(chat, socket.data.userId)
-      const messageDto = MessageDTOMapper.toDTO(message, chatDto, socket.data.userId)
+      const messageDto = MessageDTOMapper.toDTO(message, socket.data.userId)
 
       socket.emit('onNewMessage', messageDto, chatDto)
     })

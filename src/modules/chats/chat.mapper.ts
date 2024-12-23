@@ -3,6 +3,7 @@ import { ChatDTO } from './chats.dto'
 import { RawChat } from './chats.types'
 import { UserDTOMapper } from '../user/user.mapper'
 import { UserDTO } from '../user/user.dto'
+import { MessageDTOMapper } from '../message/message.mapper'
 
 export class ChatDTOMapper {
   public static toDTO(raw: RawChat, requesterId: string): ChatDTO {
@@ -14,17 +15,18 @@ export class ChatDTOMapper {
     const theirLastReadMessageSequenceId = privateChatMember
       ? privateChatMember.myLastReadMessageSequenceId
       : this.getTheirLastReadMessageSequenceId(raw, requesterId)
+
     return new ChatDTO({
       id: raw.id,
       userId: privateChatUserDTO?.id,
       type: raw.type,
       title,
       description: raw.description || undefined,
-      color: raw.color,
+      color: privateChatUserDTO?.color ?? raw.color,
       createdAt: raw.createdAt,
       membersCount: raw._count.members,
       firstMessageSequenceId: raw.firstMessage?.sequenceId ?? undefined,
-      lastMessageSequenceId: raw.lastMessage?.sequenceId ?? undefined,
+      lastMessage: raw.lastMessage ? MessageDTOMapper.toDTO(raw.lastMessage, requesterId) : undefined,
       myLastReadMessageSequenceId: requesterChatMember?.myLastReadMessageSequenceId ?? undefined,
       theirLastReadMessageSequenceId: theirLastReadMessageSequenceId ?? undefined,
       unreadCount: requesterChatMember?.unreadCount ?? 0,

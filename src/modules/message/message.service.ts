@@ -41,7 +41,21 @@ export class MessageService {
         ...(!chat.firstMessage && {
           firstMessage: { connect: { id: message.id } }
         }),
-        lastMessage: { connect: { id: message.id } }
+        lastMessage: { connect: { id: message.id } },
+        members: {
+          updateMany: {
+            where: {
+              userId: {
+                not: requesterId
+              }
+            },
+            data: {
+              unreadCount: {
+                increment: 1
+              }
+            }
+          }
+        }
       },
       include: chatInclude
     })
@@ -83,7 +97,7 @@ export class MessageService {
         })
       })
       const chatDto = ChatDTOMapper.toDTO(chat, requesterId)
-      return MessageDTOMapper.toDTOList([...older, ...newer], chatDto, requesterId)
+      return MessageDTOMapper.toDTOList([...older, ...newer], requesterId)
     }
 
     if (dto.direction === GetMessagesDirection.OLDER && dto.sequenceId === 0) {
@@ -105,7 +119,7 @@ export class MessageService {
     })
     const chatDto = ChatDTOMapper.toDTO(chat, requesterId)
 
-    return MessageDTOMapper.toDTOList(raws, chatDto, requesterId)
+    return MessageDTOMapper.toDTOList(raws, requesterId)
   }
 
   public async readHistory(dto: ReadHistoryDTO, requesterId: string): Promise<ReadMyHistoryResult> {
