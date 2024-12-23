@@ -4,13 +4,12 @@ import {
   OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer,
-  WsException
+  WebSocketServer
 } from '@nestjs/websockets'
-import { Server, Socket } from 'socket.io'
+import { Socket } from 'socket.io'
 import { AuthorizationService } from '../modules/authorization/authorization.service'
 import { TypedSocket, SocketInfo, TypedServer } from './gateway.types'
-import { SocketClientsManager } from './socket-clients.manager'
+import { SocketsManager } from './socket-clients.manager'
 import { UnauthorizedException } from '@nestjs/common'
 import { ErrorCode } from '../common/errors/error-code.enum'
 import { TokenExpiredError } from '@nestjs/jwt'
@@ -19,12 +18,10 @@ import { TokenExpiredError } from '@nestjs/jwt'
 @WebSocketGateway({ cors: true })
 export class Gateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
   @WebSocketServer() server: TypedServer
+  public clientsManager = new SocketsManager()
 
-  /**
-   * @todo: назвати просто SocketsManager
-   */
-  public clientsManager = new SocketClientsManager()
   public constructor(private authorizationService: AuthorizationService) {}
+
   async afterInit(server: TypedServer) {
     server.use(async (socket, next) => {
       try {
@@ -64,36 +61,6 @@ export class Gateway implements OnGatewayConnection, OnGatewayDisconnect, OnGate
 
   async handleConnection(client: TypedSocket, ...args: any[]) {
     console.log('CONNECT', client.id, client.userId, client.sessionId)
-    // const accessToken = client.handshake.headers.authorization
-
-    // console.log('Client connected', client.id)
-
-    // // return client.disconnect()
-
-    // if (!accessToken) {
-    //   console.log('Client no access-token')
-
-    //   client.emit('auth:unauthorized')
-    //   client.disconnect()
-
-    //   return this.handleDisconnect(client)
-    // }
-
-    // try {
-    //   // const payload = await this.authorizationService.verifyAccessToken(accessToken)
-
-    //   // const socketInfo: SocketInfo = {
-    //   //   socketId: client.id,
-    //   //   sessionId: payload.sessionId
-    //   // }
-    //   // this.clientsManager.addClient(payload.userId, socketInfo)
-    // } catch (error) {
-    //   console.log('[socket.io]: Client unauthorized')
-    //   client.disconnect()
-
-    //   return this.handleDisconnect(client)
-    // }
-
     console.log([...this.clientsManager.getActiveClients()][0][1])
   }
 

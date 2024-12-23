@@ -17,9 +17,6 @@ export class UserRepository {
     return this.prisma.user.create({
       data: {
         ...data,
-        /**
-         * @todo можливо це можна додати в create user dto???
-         */
         color: getRandomElement(CHAT_COLORS)
       },
       include: userIncludes

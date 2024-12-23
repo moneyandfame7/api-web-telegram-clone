@@ -9,9 +9,6 @@ export class ContactsRepository {
   public constructor(private prisma: PrismaService) {}
 
   public async findOne(userId: string, requesterId: string): Promise<RawContact | null> {
-    /**
-     * @todo перевірити різницю між contact.firstName і contact.contact.firstName !!!
-     */
     return this.prisma.contact.findFirst({
       where: {
         contactId: userId,

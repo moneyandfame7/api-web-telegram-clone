@@ -1,47 +1,17 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common'
-import { randomUUID } from 'crypto'
+import { Controller, Get, Param, ParseUUIDPipe, UseGuards } from '@nestjs/common'
 
 import { JwtAuthGuard } from '../authorization/authorization.guard'
 import { CurrentAuth } from '../authorization/authorization.decorator'
 import { AuthorizationPayload } from '../authorization/authorization.types'
 
-import { ChatDTO, CreateChatDto } from './chats.dto'
+import { ChatDTO } from './chats.dto'
 import { ChatsService } from './chats.service'
 import { RawChat } from './chats.types'
-import { ChatGateway } from './chats.gateway'
-import { ChatDTOMapper } from './chat.mapper'
 import { ChatIdPipe } from './chat.pipes'
 
 @Controller('/chats')
 export class ChatsController {
-  public constructor(
-    private service: ChatsService,
-    private chatGateway: ChatGateway
-  ) {}
-
-  @UseGuards(JwtAuthGuard)
-  @Post()
-  public async createOne(@CurrentAuth() auth: AuthorizationPayload, @Body() dto: CreateChatDto): Promise<ChatDTO> {
-    const chat = await this.service.createOne(auth.userId, dto)
-
-    // this.chatGateway.chatCreated(chat)
-
-    return ChatDTOMapper.toDTO(chat, auth.userId)
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Post('test')
-  public async test(@CurrentAuth() auth: AuthorizationPayload, @Body() body: CreateChatDto) {
-    const users = [...body.users, auth.userId]
-
-    const chat = {
-      id: randomUUID(),
-      ...body,
-      users
-    }
-
-    return chat
-  }
+  public constructor(private service: ChatsService) {}
 
   @UseGuards(JwtAuthGuard)
   @Get()

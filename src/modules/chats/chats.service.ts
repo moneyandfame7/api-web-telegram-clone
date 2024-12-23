@@ -12,7 +12,7 @@ import { isUserId } from './chat.helpers'
 export class ChatsService {
   public constructor(private prisma: PrismaService) {}
 
-  public async createOne(requesterId: string, dto: CreateChatDto): Promise<RawChat> {
+  public async createOne(dto: CreateChatDto, requesterId: string): Promise<RawChat> {
     const memberIds = [...(dto.users ? new Set([...dto.users, requesterId]) : requesterId)]
 
     return this.prisma.chat.create({
@@ -118,7 +118,7 @@ export class ChatsService {
       const userId = chatId.split('u_')[1]
       const chat = await this.findOneRawByUser(userId, requesterId)
 
-      return chat || (await this.createOne(requesterId, { title: 'PRIVATE_CHAT', type: 'PRIVATE', users: [userId] }))
+      return chat || (await this.createOne({ title: 'PRIVATE_CHAT', type: 'PRIVATE', users: [userId] }, requesterId))
     }
 
     return this.findOneRaw(chatId, requesterId)

@@ -8,7 +8,6 @@ import { AuthorizationPayload, AuthorizationResult, JwtAccessPayload, JwtRefresh
 
 import { UserService } from '../user/user.service'
 import { SessionService } from '../session/session.service'
-import { User } from '@prisma/client'
 import { RawUser } from '../user/user.types'
 
 @Injectable()

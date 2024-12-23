@@ -21,12 +21,9 @@ export class ChatGateway {
     private chatService: ChatsService
   ) {}
 
-  /**
-   * @todo перевірити ще цей ендпоінт, перевірити dto
-   */
   @SubscribeMessage('createChat')
   async createChat(@MessageBody() dto: CreateChatDto, @ConnectedSocket() client: TypedSocket): Promise<ChatDTO> {
-    const raw = await this.chatService.createOne(client.userId, dto)
+    const raw = await this.chatService.createOne(dto, client.userId)
 
     this.chatCreated(raw, client.id)
 

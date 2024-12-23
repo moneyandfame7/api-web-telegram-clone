@@ -1,6 +1,6 @@
 import { SocketInfo } from './gateway.types'
 
-export class SocketClientsManager {
+export class SocketsManager {
   /**
    * {userId: SocketInfo[]}
    */

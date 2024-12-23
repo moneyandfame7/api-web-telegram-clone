@@ -9,7 +9,6 @@ import { GetMessagesDTO, MessageDTO, ReadHistoryDTO, SendMessageDTO } from './me
 import { MessageDTOMapper } from './message.mapper'
 import { InvalidEntityIdError } from '../../common/errors/common.errors'
 import { ChatsService } from '../chats/chats.service'
-import { ChatDTOMapper } from '../chats/chat.mapper'
 
 @Injectable()
 export class MessageService {
@@ -96,14 +95,13 @@ export class MessageService {
           }
         })
       })
-      const chatDto = ChatDTOMapper.toDTO(chat, requesterId)
+
       return MessageDTOMapper.toDTOList([...older, ...newer], requesterId)
     }
 
     if (dto.direction === GetMessagesDirection.OLDER && dto.sequenceId === 0) {
       return []
     }
-    console.log(dto)
     const raws = await this.prisma.message.findMany({
       where: {
         chatId: chat.id
@@ -117,7 +115,6 @@ export class MessageService {
         }
       })
     })
-    const chatDto = ChatDTOMapper.toDTO(chat, requesterId)
 
     return MessageDTOMapper.toDTOList(raws, requesterId)
   }
