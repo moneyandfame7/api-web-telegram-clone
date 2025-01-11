@@ -1,7 +1,6 @@
-import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets'
-import { Server } from 'socket.io'
+import { ConnectedSocket, MessageBody, WebSocketGateway, WebSocketServer } from '@nestjs/websockets'
 import { Gateway } from '../../gateway/gateway'
-import { TypedServer, TypedSocket } from './../../gateway/gateway.types'
+import { TypedServer, TypedSocket, TypedSubscribeMessage } from './../../gateway/gateway.types'
 
 import { RawChat } from './chats.types'
 import { ChatDTOMapper } from './chat.mapper'
@@ -21,9 +20,9 @@ export class ChatGateway {
     private chatService: ChatsService
   ) {}
 
-  @SubscribeMessage('createChat')
+  @TypedSubscribeMessage('chat:create')
   async createChat(@MessageBody() dto: CreateChatDto, @ConnectedSocket() client: TypedSocket): Promise<ChatDTO> {
-    const raw = await this.chatService.createOne(dto, client.userId)
+    const raw = await this.chatService.createOneRaw(dto, client.userId)
 
     this.chatCreated(raw, client.id)
 

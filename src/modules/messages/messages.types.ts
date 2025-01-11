@@ -8,9 +8,9 @@ export enum GetMessagesDirection {
   AROUND = 'AROUND'
 }
 
-export interface ReadMyHistoryResult {
+export interface ReadByMeHistoryResult {
   chatId: string
   maxId: number
   unreadCount: number
 }
-export type ReadTheirHistoryResult = Omit<ReadMyHistoryResult, 'unreadCount'>
+export type ReadByThemHistoryResult = Omit<ReadByMeHistoryResult, 'unreadCount'>

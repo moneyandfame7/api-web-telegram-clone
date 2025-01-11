@@ -4,7 +4,7 @@ import { PrismaService } from '../../prisma/prisma.service'
 import { RawChat } from '../chats/chats.types'
 import { chatInclude } from '../chats/chat.constants'
 
-import { GetMessagesDirection, RawMessage, ReadMyHistoryResult } from './messages.types'
+import { GetMessagesDirection, RawMessage, ReadByMeHistoryResult } from './messages.types'
 import { GetMessagesDTO, MessageDTO, ReadHistoryDTO, SendMessageDTO } from './messages.dto'
 import { MessageDTOMapper } from './messages.mapper'
 import { InvalidEntityIdError } from '../../common/errors/common.errors'
@@ -119,7 +119,7 @@ export class MessagesService {
     return MessageDTOMapper.toDTOList(raws, requesterId)
   }
 
-  public async readHistory(dto: ReadHistoryDTO, requesterId: string): Promise<ReadMyHistoryResult> {
+  public async readHistory(dto: ReadHistoryDTO, requesterId: string): Promise<ReadByMeHistoryResult> {
     const chat = await this.chatsService.findOneRaw(dto.chatId, requesterId)
 
     if (!chat) {

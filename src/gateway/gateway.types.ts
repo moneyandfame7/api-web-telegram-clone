@@ -1,17 +1,22 @@
 import { Server, Socket } from 'socket.io'
 import { ChatDTO } from '../modules/chats/chats.dto'
 import { MessageDTO } from '../modules/messages/messages.dto'
-import { ReadMyHistoryResult, ReadTheirHistoryResult } from '../modules/messages/messages.types'
+import { ReadByMeHistoryResult, ReadByThemHistoryResult } from '../modules/messages/messages.types'
+import { SubscribeMessage } from '@nestjs/websockets'
 
-export interface ListenEvents {}
+export interface ListenEvents {
+  ['chat:create']: void
+
+  ['message:send']: void
+  ['message:read-history']: void
+}
 
 export interface EmitEvents {
   ['chat:created']: (chat: ChatDTO) => void
 
-  ['onNewMessage']: (message: MessageDTO, chat: ChatDTO) => void
-
-  ['message:read-my']: (data: ReadMyHistoryResult) => void
-  ['message:read-their']: (data: ReadTheirHistoryResult) => void
+  ['message:new']: (message: MessageDTO, chat: ChatDTO) => void
+  ['message:read-by-me']: (data: ReadByMeHistoryResult) => void
+  ['message:read-by-them']: (data: ReadByThemHistoryResult) => void
 }
 
 export interface SocketInfo {
@@ -25,6 +30,10 @@ export interface TypedSocketData {
 }
 
 export type TypedServer = Server<ListenEvents, EmitEvents, any, TypedSocketData>
+
+export const TypedSubscribeMessage = (message: keyof ListenEvents) => {
+  return SubscribeMessage(message)
+}
 
 export interface TypedSocket extends Socket<ListenEvents, EmitEvents> {
   userId: string

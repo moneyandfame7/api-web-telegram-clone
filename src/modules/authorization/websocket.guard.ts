@@ -13,8 +13,7 @@ export class WsJwtGuard implements CanActivate {
       const userId = client.handshake.query.userId
 
       client.handshake.query = {
-        userId,
-        hui: 'pizda'
+        userId
       }
       return true
     } catch (err) {
