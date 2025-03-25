@@ -1,14 +1,15 @@
 model User {
-  id        String       @id @default(uuid())
-  username  String       @unique
-  password  String
-  firstName String
-  lastName  String?
-  createdAt DateTime     @default(now())
-  color     ChatColor
-  sessions  Session[]
-  chats     ChatMember[]
-  messages  Message[]
+  id              String       @id @default(uuid())
+  username        String       @unique
+  password        String
+  firstName       String
+  lastName        String?
+  createdAt       DateTime     @default(now())
+  color           ChatColor
+  sessions        Session[]
+  chats           ChatMember[]
+  messages        Message[]
+  deletedMessages Message[]    @relation(name: "DeletedMessagesByUsers")
 
   contacts        Contact[] @relation(name: "ContactToOwner")
   addedByContacts Contact[] @relation(name: "ContactToUser")

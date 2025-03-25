@@ -6,7 +6,7 @@ import { AuthorizationPayload } from '../authorization/authorization.types'
 
 import { ChatDTO } from './chats.dto'
 import { ChatsService } from './chats.service'
-import { RawChat } from './chats.types'
+import { GetChatsResult, RawChat } from './chats.types'
 import { ChatIdPipe } from './chat.pipes'
 
 @Controller('/chats')
@@ -15,7 +15,7 @@ export class ChatsController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  public async findMany(@CurrentAuth() auth: AuthorizationPayload): Promise<ChatDTO[]> {
+  public async findMany(@CurrentAuth() auth: AuthorizationPayload): Promise<GetChatsResult> {
     return this.service.findMany(auth.userId)
   }
 

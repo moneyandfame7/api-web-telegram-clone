@@ -1,4 +1,4 @@
-import { HttpException } from '@nestjs/common'
+import { HttpException, HttpStatus } from '@nestjs/common'
 
 export enum ErrorCode {
   UNAUTHORIZED = 'UNAUTHORIZED',
@@ -8,6 +8,8 @@ export enum ErrorCode {
   AUTH_TOKEN_EXPIRED = 'AUTH_TOKEN_EXPIRED',
   AUTH_TOKEN_MISSING = 'AUTH_TOKEN_MISSING',
   AUTH_SESSION_INVALID = 'AUTH_SESSION_INVALID',
+
+  CHAT_ID_INVALID = 'CHAT_ID_INVALID',
 
   INVALID_ID = 'INVALID_ID',
   VALIDATION_ERROR = 'VALIDATION_ERROR'
@@ -24,6 +26,6 @@ export class BaseError extends HttpException {
 
 export class ValidationError extends BaseError {
   constructor(details: any) {
-    super(422, ErrorCode.VALIDATION_ERROR, 'Validation Error message', details)
+    super(HttpStatus.UNPROCESSABLE_ENTITY, ErrorCode.VALIDATION_ERROR, 'Validation Error message', details)
   }
 }

@@ -6,7 +6,7 @@ import { PrismaService } from '../../prisma/prisma.service'
 import { CreateUserDto } from './users.dto'
 import { RawUser } from './users.types'
 import { CHAT_COLORS } from '../chats/chat.constants'
-import { userIncludes } from './users.constants'
+import { userInclude } from './users.constants'
 import { getRandomElement } from '../../common/helpers'
 
 @Injectable()
@@ -19,14 +19,14 @@ export class UsersRepository {
         ...data,
         color: getRandomElement(CHAT_COLORS)
       },
-      include: userIncludes
+      include: userInclude
     })
   }
 
   public async findWhere(where: Prisma.UserWhereUniqueInput): Promise<RawUser | null> {
     return this.prisma.user.findFirst({
       where,
-      include: userIncludes
+      include: userInclude
     })
   }
 }

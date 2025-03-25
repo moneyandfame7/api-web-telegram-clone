@@ -1,4 +1,4 @@
-import { IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator'
+import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator'
 import { GetMessagesDirection } from './messages.types'
 import { Transform, Type } from 'class-transformer'
 import { IsChatId } from '../chats/chat.pipes'
@@ -11,7 +11,7 @@ export class MessageDTO {
   text?: string
   createdAt: Date
   editedAt?: Date
-
+  replyInfo?: MessageReplyDTO
   isOutgoing: boolean
   isSilent: boolean
   constructor(data: {
@@ -22,6 +22,8 @@ export class MessageDTO {
     text?: string
     createdAt: Date
     editedAt?: Date
+
+    replyInfo?: MessageReplyDTO
     isOutgoing: boolean
     isSilent: boolean
   }) {
@@ -32,14 +34,39 @@ export class MessageDTO {
     this.text = data.text
     this.createdAt = data.createdAt
     this.editedAt = data.editedAt
+
+    this.replyInfo = data.replyInfo
     this.isOutgoing = data.isOutgoing
     this.isSilent = data.isSilent
   }
+}
+export class MessageReplyDTO {
+  id: string
+  sequenceId: number
+  text?: string
+  senderId: string
 }
 export class SendMessageDTO {
   @IsChatId()
   chatId: string
 
+  @IsString()
+  text: string
+
+  @IsUUID()
+  @IsOptional()
+  @Type(() => String)
+  replyToMsgId?: string
+}
+
+export class EditMessageDTO {
+  @IsUUID()
+  id: string
+
+  @IsUUID()
+  chatId: string
+
+  @IsNotEmpty()
   @IsString()
   text: string
 }
@@ -66,6 +93,16 @@ export class GetMessagesDTO {
   @IsNumber()
   @IsOptional()
   limit: number = 20
+}
+export class DeleteMessagesDTO {
+  @IsUUID()
+  chatId: string
+
+  @IsUUID(undefined, { each: true })
+  ids: string[]
+
+  @IsBoolean()
+  deleteForAll: boolean
 }
 
 export class ReadHistoryDTO {

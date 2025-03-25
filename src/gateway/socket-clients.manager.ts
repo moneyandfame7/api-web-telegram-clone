@@ -6,7 +6,7 @@ export class SocketsManager {
    */
   private clientsMap = new Map<string, SocketInfo[]>()
 
-  public getActiveClients() {
+  public getAllClients() {
     return this.clientsMap.entries()
   }
 

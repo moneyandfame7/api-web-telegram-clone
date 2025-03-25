@@ -1,6 +1,5 @@
-import { ChatMember } from '@prisma/client'
 import { ChatDTO } from './chats.dto'
-import { RawChat } from './chats.types'
+import { RawChat, RawChatMember } from './chats.types'
 import { UserDTOMapper } from '../users/users.mapper'
 import { UserDTO } from '../users/users.dto'
 import { MessageDTOMapper } from '../messages/messages.mapper'
@@ -15,7 +14,12 @@ export class ChatDTOMapper {
     const theirLastReadMessageSequenceId = privateChatMember
       ? privateChatMember.myLastReadMessageSequenceId
       : this.getTheirLastReadMessageSequenceId(raw, requesterId)
+    // requesterChatMember?.lastVisibleMessage ? requesterChatMember.lastVisibleMessage
 
+    const lastMessageRaw = requesterChatMember?.lastVisibleMessage ?? raw.lastMessage
+    if (requesterChatMember?.lastVisibleMessage) {
+      console.log('ANOTHER VIS MSG', requesterChatMember.lastVisibleMessage)
+    }
     return new ChatDTO({
       id: raw.id,
       userId: privateChatUserDTO?.id,
@@ -26,7 +30,7 @@ export class ChatDTOMapper {
       createdAt: raw.createdAt,
       membersCount: raw._count.members,
       firstMessageSequenceId: raw.firstMessage?.sequenceId ?? undefined,
-      lastMessage: raw.lastMessage ? MessageDTOMapper.toDTO(raw.lastMessage, requesterId) : undefined,
+      lastMessage: lastMessageRaw ? MessageDTOMapper.toDTO(lastMessageRaw, requesterId) : undefined,
       myLastReadMessageSequenceId: requesterChatMember?.myLastReadMessageSequenceId ?? undefined,
       theirLastReadMessageSequenceId: theirLastReadMessageSequenceId ?? undefined,
       unreadCount: requesterChatMember?.unreadCount ?? 0,
@@ -42,7 +46,7 @@ export class ChatDTOMapper {
     return raws.map(raw => this.toDTO(raw, requesterId))
   }
 
-  private static getChatMember(raw: RawChat, userId: string): ChatMember | undefined {
+  private static getChatMember(raw: RawChat, userId: string): RawChatMember | undefined {
     return raw.members.find(member => member.userId === userId)
   }
 
@@ -56,7 +60,7 @@ export class ChatDTOMapper {
     return membersLastReadMessageSequenceId.length ? Math.max(...membersLastReadMessageSequenceId, 0) : undefined
   }
 
-  private static isJoined(member: ChatMember | undefined): member is ChatMember {
+  private static isJoined(member: RawChatMember | undefined): member is RawChatMember {
     return Boolean(member)
   }
 

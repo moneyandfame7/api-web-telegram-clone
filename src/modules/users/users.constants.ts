@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client'
 
-export const userIncludes = {
+export const userInclude = {
   contacts: true,
   addedByContacts: true
 } satisfies Prisma.UserInclude

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { AddContactDto } from './contacts.dto'
-import { userIncludes } from '../users/users.constants'
+import { userInclude } from '../users/users.constants'
 import { RawContact } from './contacts.types'
 import { PrismaService } from '../../prisma/prisma.service'
 
@@ -16,7 +16,7 @@ export class ContactsRepository {
       },
       include: {
         contact: {
-          include: userIncludes
+          include: userInclude
         }
       }
     })
@@ -29,7 +29,7 @@ export class ContactsRepository {
       },
       include: {
         contact: {
-          include: userIncludes
+          include: userInclude
         }
       }
     })
@@ -45,7 +45,7 @@ export class ContactsRepository {
       },
       include: {
         contact: {
-          include: userIncludes
+          include: userInclude
         }
       }
     })
