@@ -94,6 +94,10 @@ export class MessagesService {
       throw new InvalidEntityIdError()
     }
 
+    if (!chat.lastMessage) {
+      return []
+    }
+
     const cursorMessage =
       dto.sequenceId !== undefined
         ? await this.prisma.message.findFirst({
