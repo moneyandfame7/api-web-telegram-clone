@@ -3,10 +3,12 @@ import { ChatDTO, CreateChatDto } from './chats.dto'
 import { CHAT_COLORS, chatInclude } from './chat.constants'
 import { Chat } from '@prisma/client'
 import { ChatDTOMapper } from './chat.mapper'
-import { RawChat } from './chats.types'
+import { GetChatsResult, RawChat } from './chats.types'
 import { PrismaService } from '../../prisma/prisma.service'
 import { getRandomElement } from '../../common/helpers'
 import { isUserId } from './chat.helpers'
+import { userInclude } from '../users/users.constants'
+import { UserDTOMapper } from '../users/users.mapper'
 
 @Injectable()
 export class ChatsService {
@@ -33,7 +35,7 @@ export class ChatsService {
     })
   }
 
-  public async findMany(requesterId: string): Promise<ChatDTO[]> {
+  public async findMany(requesterId: string): Promise<GetChatsResult> {
     const raws = await this.prisma.chat.findMany({
       where: {
         members: {
@@ -45,7 +47,12 @@ export class ChatsService {
       include: chatInclude
     })
 
-    return ChatDTOMapper.toDTOList(raws, requesterId)
+    const mentionedUsers = raws.map(chat => chat.lastMessage?.sender).filter(sender => sender !== undefined)
+
+    const chats = ChatDTOMapper.toDTOList(raws, requesterId)
+    const users = UserDTOMapper.toDTOList(mentionedUsers, requesterId)
+
+    return { chats, users }
   }
 
   public async findManyRaw(requesterId: string): Promise<RawChat[]> {
@@ -77,12 +84,32 @@ export class ChatsService {
   }
 
   public async findOneRaw(id: string, requesterId: string): Promise<RawChat | null> {
+    // const lastMessageForRequester = await this.prisma.message.findFirst({
+    //   where: {
+    //     chatId: id,
+    //     deletedByUsers: {
+    //       none: {
+    //         id: requesterId
+    //       }
+    //     }
+    //   },
+    //   orderBy: {
+    //     sequenceId: 'desc'
+    //   }
+    // })
     return this.prisma.chat.findUnique({
       where: {
         id
       },
       include: chatInclude
     })
+
+    // return (
+    //   chat && {
+    //     ...chat,
+    //     lastMessage: lastMessageForRequester
+    //   }
+    // )
   }
 
   private async findOneRawByUser(userId: string, requesterId: string) {

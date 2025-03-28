@@ -8,7 +8,7 @@ import {
 } from '@nestjs/websockets'
 import { Socket } from 'socket.io'
 import { AuthorizationService } from '../modules/authorization/authorization.service'
-import { TypedSocket, SocketInfo, TypedServer } from './gateway.types'
+import { TypedSocket, SocketInfo, TypedServer, TypedSubscribeMessage } from './gateway.types'
 import { SocketsManager } from './socket-clients.manager'
 import { UnauthorizedException } from '@nestjs/common'
 import { ErrorCode } from '../common/errors/error-code.enum'
@@ -61,7 +61,7 @@ export class Gateway implements OnGatewayConnection, OnGatewayDisconnect, OnGate
 
   async handleConnection(client: TypedSocket, ...args: any[]) {
     console.log('CONNECT', client.id, client.userId, client.sessionId)
-    console.log([...this.clientsManager.getActiveClients()][0][1])
+    console.log([...this.clientsManager.getAllClients()][0][1])
   }
 
   handleDisconnect(client: Socket) {
@@ -70,7 +70,7 @@ export class Gateway implements OnGatewayConnection, OnGatewayDisconnect, OnGate
     this.clientsManager.removeClient(client.id)
   }
 
-  @SubscribeMessage('join')
+  @TypedSubscribeMessage('room:join')
   async join(client: Socket, roomName: string) {
     console.log(`user ${client.data?.userId} joined to room [${roomName}]`)
     // client.handshake.query.userId

@@ -3,10 +3,10 @@ import { UseFilters, UsePipes } from '@nestjs/common'
 
 import { GatewayValidationPipe, WsExceptionFilter } from '../../gateway/gateway-vadliation.pipe'
 import { MessagesService } from './messages.service'
-import { MessageDTO, ReadHistoryDTO, SendMessageDTO } from './messages.dto'
+import { DeleteMessagesDTO, EditMessageDTO, MessageDTO, ReadHistoryDTO, SendMessageDTO } from './messages.dto'
 import { TypedSocket, TypedServer, TypedSubscribeMessage } from '../../gateway/gateway.types'
 import { Gateway } from '../../gateway/gateway'
-import { RawMessage, ReadByMeHistoryResult } from './messages.types'
+import { DeleteMessagesResult, EditMessageResult, RawMessage, ReadByMeHistoryResult } from './messages.types'
 import { RawChat } from '../chats/chats.types'
 import { MessageDTOMapper } from './messages.mapper'
 import { ChatDTOMapper } from '../chats/chat.mapper'
@@ -41,6 +41,7 @@ export class MessagesGateway {
     const sockets = await this.server.in(`chat-${chat.id}`).fetchSockets()
 
     if (sockets.length === 0) {
+      console.log('SOCKETS LENGTH === 0')
       chat.members.forEach(member => {
         const clients = this.gateway.clientsManager.getClients(member.userId)
 
@@ -73,11 +74,31 @@ export class MessagesGateway {
     })
   }
 
-  @SubscribeMessage('message:read-history')
+  @TypedSubscribeMessage('message:edit')
+  async editMessage(@MessageBody() dto: EditMessageDTO, @ConnectedSocket() client: TypedSocket) {
+    const result = await this.messageService.editMessage(dto, client.userId)
+    this.onEditMessage(result, client.id)
+
+    return result
+  }
+  async onEditMessage(result: EditMessageResult, requesterSocketId: string) {
+    const sockets = await this.server.in(`chat-${result.chatId}`).fetchSockets()
+
+    sockets.forEach(socket => {
+      if (socket.id === requesterSocketId) {
+        return
+      }
+
+      socket.emit('message:edited', result)
+    })
+  }
+
+  @TypedSubscribeMessage('message:read-history')
   async readHistory(
     @MessageBody() dto: ReadHistoryDTO,
     @ConnectedSocket() client: TypedSocket
   ): Promise<ReadByMeHistoryResult> {
+    console.log(client.userId, 'LOHHHH')
     const result = await this.messageService.readHistory(dto, client.userId)
 
     this.onReadHistoryByMe(result, client.userId, client.id)
@@ -109,5 +130,54 @@ export class MessagesGateway {
       }
       socket.emit('message:read-by-them', { chatId: data.chatId, maxId: data.maxId })
     })
+  }
+
+  @TypedSubscribeMessage('message:delete')
+  async deleteMessage(
+    @MessageBody() dto: DeleteMessagesDTO,
+    @ConnectedSocket() client: TypedSocket
+  ): Promise<DeleteMessagesResult> {
+    const result = await this.messageService.deleteMessages(dto, client.userId)
+    this.onDeleteMessages(result, client.userId, client.id)
+    const chat = ChatDTOMapper.toDTO(result.chat, client.userId)
+    return { chat, deleteForAll: result.deleteForAll, ids: result.ids, requesterId: client.userId }
+  }
+  async onDeleteMessages(
+    result: { chat: RawChat; ids: string[]; deleteForAll: boolean },
+    requesterId: string,
+    requesterSocketId: string
+  ) {
+    // const sockets = await this.server.in(`chat-${chat.id}`).fetchSockets()
+    const sockets = await this.server.in(`chat-${result.chat.id}`).fetchSockets()
+
+    // this.server.in
+    // пофіксити, тут не фетчаться клієнти які підключені до кімнати
+    console.log('TRIGGER DELETED!!!', { result }, sockets)
+
+    const test = await this.server.fetchSockets()
+
+    console.log({ test })
+    if (result.deleteForAll) {
+      sockets.forEach(socket => {
+        if (socket.id === requesterSocketId) {
+          return
+        }
+        console.log('TRIGGER TRIGGER DELETED')
+        const chat = ChatDTOMapper.toDTO(result.chat, socket.data.userId)
+        socket.emit('message:deleted', { ids: result.ids, chat, deleteForAll: result.deleteForAll, requesterId })
+      })
+    } else {
+      const requesterClients = this.gateway.clientsManager.getClients(requesterId)
+      const chat = ChatDTOMapper.toDTO(result.chat, requesterId)
+
+      requesterClients?.forEach(socket => {
+        if (socket.socketId === requesterSocketId) {
+          return
+        }
+        this.server
+          .to(socket.socketId)
+          .emit('message:deleted', { ids: result.ids, chat, deleteForAll: result.deleteForAll, requesterId })
+      })
+    }
   }
 }

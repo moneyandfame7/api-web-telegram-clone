@@ -19,5 +19,13 @@ model Message {
   createdAt DateTime  @default(now())
   editedAt  DateTime?
 
+  replyToMessageId String?
+  replyToMessage   Message? @relation("ReplyTo", fields: [replyToMessageId], references: [id])
+
+  repliedIn Message[] @relation(name: "ReplyTo")
+
+  deletedByUsers      User[]       @relation(name: "DeletedMessagesByUsers")
+  lastVisibleForUsers ChatMember[]
+
   @@unique([chatId, sequenceId], name: "compositeSequenceId")
 }

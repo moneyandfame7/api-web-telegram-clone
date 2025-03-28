@@ -1,16 +1,24 @@
 import type { ChatColor, Prisma } from '@prisma/client'
-import { userIncludes } from '../users/users.constants'
+import { userInclude } from '../users/users.constants'
+import { messagesIncludes } from '../messages/messages.constants'
 
 export const chatInclude = {
   members: {
     include: {
       user: {
-        include: userIncludes
+        include: userInclude
+      },
+      lastVisibleMessage: {
+        include: messagesIncludes
       }
     }
   },
-  lastMessage: true,
-  firstMessage: true,
+  lastMessage: {
+    include: messagesIncludes
+  },
+  firstMessage: {
+    include: messagesIncludes
+  },
   _count: {
     select: {
       members: true
