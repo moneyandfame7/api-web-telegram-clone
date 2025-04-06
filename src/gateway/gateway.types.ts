@@ -19,6 +19,7 @@ export interface ListenEvents {
   ['message:edit']: void
   ['message:delete']: void
   ['message:read-history']: void
+  ['message:forward']: void
 }
 
 export interface EmitEvents {
@@ -29,6 +30,7 @@ export interface EmitEvents {
   ['message:deleted']: (data: DeleteMessagesResult) => void
   ['message:read-by-me']: (data: ReadByMeHistoryResult) => void
   ['message:read-by-them']: (data: ReadByThemHistoryResult) => void
+  ['message:forwarded']: (messages: MessageDTO[], chat: ChatDTO) => void
 }
 
 export interface SocketInfo {

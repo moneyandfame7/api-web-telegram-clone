@@ -1,6 +1,7 @@
 import { Message } from '@prisma/client'
 import { ChatDTO } from '../chats/chats.dto'
 import { RawUser } from '../users/users.types'
+import { MessageDTO } from './messages.dto'
 
 export interface RawMessage extends Message {
   sender: RawUser
@@ -10,9 +11,16 @@ export interface RawMessage extends Message {
     text: string | null
     sender: RawUser
   } | null
+  forwardFromMessage: {
+    id: string
+    sequenceId: number
+    chatId: string
+    text: string | null
+    sender: RawUser
+  } | null
 }
 
-export interface ReplyMessageInfo {
+export interface ReplyForwardInfo {
   id: string
   sequenceId: string
   chatId: string
@@ -44,4 +52,8 @@ export interface DeleteMessagesResult {
   chat: ChatDTO
   ids: string[]
   deleteForAll: boolean
+}
+export interface ForwardMessagesResult {
+  messages: MessageDTO[]
+  chat: ChatDTO
 }

@@ -1,12 +1,25 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer, ConnectedSocket } from '@nestjs/websockets'
+import { WebSocketGateway, MessageBody, WebSocketServer, ConnectedSocket } from '@nestjs/websockets'
 import { UseFilters, UsePipes } from '@nestjs/common'
 
 import { GatewayValidationPipe, WsExceptionFilter } from '../../gateway/gateway-vadliation.pipe'
 import { MessagesService } from './messages.service'
-import { DeleteMessagesDTO, EditMessageDTO, MessageDTO, ReadHistoryDTO, SendMessageDTO } from './messages.dto'
+import {
+  DeleteMessagesDTO,
+  EditMessageDTO,
+  ForwardMessagesDTO,
+  MessageDTO,
+  ReadHistoryDTO,
+  SendMessageDTO
+} from './messages.dto'
 import { TypedSocket, TypedServer, TypedSubscribeMessage } from '../../gateway/gateway.types'
 import { Gateway } from '../../gateway/gateway'
-import { DeleteMessagesResult, EditMessageResult, RawMessage, ReadByMeHistoryResult } from './messages.types'
+import {
+  DeleteMessagesResult,
+  EditMessageResult,
+  ForwardMessagesResult,
+  RawMessage,
+  ReadByMeHistoryResult
+} from './messages.types'
 import { RawChat } from '../chats/chats.types'
 import { MessageDTOMapper } from './messages.mapper'
 import { ChatDTOMapper } from '../chats/chat.mapper'
@@ -41,7 +54,7 @@ export class MessagesGateway {
     const sockets = await this.server.in(`chat-${chat.id}`).fetchSockets()
 
     if (sockets.length === 0) {
-      console.log('SOCKETS LENGTH === 0')
+      console.log('SOCKETS LENGTH === 0', 'WARUM????')
       chat.members.forEach(member => {
         const clients = this.gateway.clientsManager.getClients(member.userId)
 
@@ -179,5 +192,56 @@ export class MessagesGateway {
           .emit('message:deleted', { ids: result.ids, chat, deleteForAll: result.deleteForAll, requesterId })
       })
     }
+  }
+
+  @TypedSubscribeMessage('message:forward')
+  async forwardMessages(
+    @MessageBody() dto: ForwardMessagesDTO,
+    @ConnectedSocket() client: TypedSocket
+  ): Promise<ForwardMessagesResult> {
+    const result = await this.messageService.forwardMessages(dto, client.userId)
+    this.onForwardMessages(result.messages, result.chat, client.id)
+    const chat = ChatDTOMapper.toDTO(result.chat, client.userId)
+    const messages = MessageDTOMapper.toDTOList(result.messages, client.userId)
+    return { chat, messages }
+  }
+
+  async onForwardMessages(messages: RawMessage[], chat: RawChat, requesterSocketId: string) {
+    const sockets = await this.server.in(`chat-${chat.id}`).fetchSockets()
+
+    // Це для випадку, коли повідомлення відправляється користувачу, з яким ще не має чату в БД.
+    if (sockets.length === 0) {
+      console.log('SOCKETS LENGTH === 0')
+      chat.members.forEach(member => {
+        const clients = this.gateway.clientsManager.getClients(member.userId)
+
+        if (!clients || clients.length === 0) {
+          return
+        }
+        const chatDto = ChatDTOMapper.toDTO(chat, member.userId)
+        const messageDTOList = MessageDTOMapper.toDTOList(messages, member.userId)
+
+        // Clients - Це всі поточні підʼєднання користувачів
+        clients.forEach(info => {
+          // не емітимо евент для сокету, який створив чат
+          if (info.socketId === requesterSocketId) {
+            return
+          }
+
+          this.server.to(info.socketId).emit('message:forwarded', messageDTOList, chatDto)
+        })
+      })
+      return
+    }
+    sockets.forEach(socket => {
+      if (socket.id === requesterSocketId) {
+        return
+      }
+
+      const chatDto = ChatDTOMapper.toDTO(chat, socket.data.userId)
+      const messageDTOList = MessageDTOMapper.toDTOList(messages, socket.data.userId)
+
+      socket.emit('message:forwarded', messageDTOList, chatDto)
+    })
   }
 }

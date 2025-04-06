@@ -12,6 +12,7 @@ export class MessageDTO {
   createdAt: Date
   editedAt?: Date
   replyInfo?: MessageReplyDTO
+  forwardInfo?: MessageForwardDTO
   isOutgoing: boolean
   isSilent: boolean
   constructor(data: {
@@ -24,6 +25,7 @@ export class MessageDTO {
     editedAt?: Date
 
     replyInfo?: MessageReplyDTO
+    forwardInfo?: MessageForwardDTO
     isOutgoing: boolean
     isSilent: boolean
   }) {
@@ -36,6 +38,7 @@ export class MessageDTO {
     this.editedAt = data.editedAt
 
     this.replyInfo = data.replyInfo
+    this.forwardInfo = data.forwardInfo
     this.isOutgoing = data.isOutgoing
     this.isSilent = data.isSilent
   }
@@ -45,6 +48,13 @@ export class MessageReplyDTO {
   sequenceId: number
   text?: string
   senderId: string
+}
+export class MessageForwardDTO {
+  id: string
+  sequenceId: number
+  text?: string
+  senderId: string
+  fromChatId: string
 }
 export class SendMessageDTO {
   @IsChatId()
@@ -103,6 +113,20 @@ export class DeleteMessagesDTO {
 
   @IsBoolean()
   deleteForAll: boolean
+}
+
+export class ForwardMessagesDTO {
+  @IsUUID(undefined, { each: true })
+  ids: string[]
+
+  @IsUUID()
+  toChatId: string
+
+  @IsUUID()
+  fromChatId: string
+
+  @IsBoolean()
+  noAuthor: boolean
 }
 
 export class ReadHistoryDTO {
