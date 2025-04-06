@@ -37,7 +37,6 @@ export class MessagesService {
       throw new InvalidEntityIdError()
     }
 
-    console.log({ chat }, 'LALLALAL')
     const message = await this.prisma.message.create({
       data: {
         chatId: chat.id,
@@ -123,8 +122,6 @@ export class MessagesService {
       throw new InvalidEntityIdError('cursorMessage')
     }
 
-    console.log({ cursorMessage }, { dto })
-
     const where: Prisma.MessageWhereInput = {
       chatId: chat.id,
       deletedByUsers: {
@@ -193,6 +190,9 @@ export class MessagesService {
       throw new ChatIdInvalidError('messagesService.editMessage')
     }
     if (dto.deleteForAll) {
+      await this.updateLastVisibleMessage(chat.id, dto.ids)
+
+      // 1. Delete the messages for all users
       await this.prisma.message.deleteMany({
         where: {
           chatId: dto.chatId,
@@ -201,25 +201,24 @@ export class MessagesService {
           }
         }
       })
+      // 2. If the lastMessage is deleted - update it
       if (chat.lastMessage && dto.ids.includes(chat.lastMessage.id)) {
         const newLastMessage = await this.prisma.message.findFirst({
-          where: { chatId: chat.id },
+          where: { chatId: chat.id /*  deletedByUsers: { none: {} } */ },
           orderBy: {
             sequenceId: 'desc'
           }
         })
+        console.log('ТРЕБА ШУКАТИ НОВЕ ЛАСТ СОО!!!', { newLastMessage })
         if (newLastMessage) {
-          const updatedChat = await this.prisma.chat.update({
+          await this.prisma.chat.update({
             where: { id: chat.id },
             data: {
               lastMessage: {
                 connect: { id: newLastMessage.id }
               }
-            },
-            include: chatInclude
+            }
           })
-
-          return { chat: updatedChat, ids: dto.ids, deleteForAll: dto.deleteForAll }
         }
       }
     } else {
@@ -246,35 +245,52 @@ export class MessagesService {
         }
       })
 
-      // треба оновлювати lastReadMessageId але я не знаю як точно, треба дізнаватись поточний, і шукати повідомлення, де sequenceId меньше ніж те яке зараз, і відправником є не я. + треба оновлювати лише тоді, коли це потрібно, а не просто так?
-      // можливо треба взагалі перенести з chatMember все в user, або навпаки все в chatMember?
-      // + можливо прибрати з чату lastMessage і зробити його окремо для всіх користувачів
-      // const newLastReadMessage = await this.prisma.message.findFirst({
-      //   where:{
-      //     sequenceId:{lt:}
-      //   }
-      // })
-
-      const updatedChat = await this.prisma.chat.update({
-        where: { id: dto.chatId },
-        data: {
-          members: {
-            update: {
-              where: { compositeMemberId: { chatId: dto.chatId, userId: requesterId } },
-              data: {
-                lastVisibleMessageId: newLastMessage?.id
-                // myLastReadMessageSequenceId:
-              }
-            }
+      await this.prisma.chatMember.update({
+        where: {
+          compositeMemberId: {
+            chatId: dto.chatId,
+            userId: requesterId
           }
         },
-        include: chatInclude
+        data: {
+          lastVisibleMessageId: newLastMessage?.id
+        }
       })
-
-      return { chat: updatedChat, ids: dto.ids, deleteForAll: dto.deleteForAll }
     }
 
-    return { chat: chat, ids: dto.ids, deleteForAll: dto.deleteForAll }
+    const updatedChat = await this.prisma.chat.findUnique({
+      where: { id: dto.chatId },
+      include: chatInclude
+    })
+
+    return { chat: updatedChat as RawChat, ids: dto.ids, deleteForAll: dto.deleteForAll }
+  }
+
+  private async updateLastVisibleMessage(chatId: string, deletedMessages: string[]) {
+    console.log('ВИКЛИКАНА ЦЯ ФУНКЦІЯ!!!', deletedMessages)
+    const affectedMembers = await this.prisma.chatMember.findMany({
+      where: { chatId, lastVisibleMessageId: { in: deletedMessages } }
+    })
+    console.log({ affectedMembers })
+    for (const member of affectedMembers) {
+      const next = await this.prisma.message.findFirst({
+        where: {
+          chatId,
+          id: { notIn: deletedMessages },
+          deletedByUsers: {
+            none: { id: member.userId }
+          }
+        },
+        orderBy: { sequenceId: 'desc' }
+      })
+
+      console.log({ next })
+
+      await this.prisma.chatMember.update({
+        where: { id: member.id },
+        data: { lastVisibleMessageId: next?.id ?? null }
+      })
+    }
   }
 
   async forwardMessages(
