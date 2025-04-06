@@ -54,7 +54,6 @@ export class MessagesGateway {
     const sockets = await this.server.in(`chat-${chat.id}`).fetchSockets()
 
     if (sockets.length === 0) {
-      console.log('SOCKETS LENGTH === 0', 'WARUM????')
       chat.members.forEach(member => {
         const clients = this.gateway.clientsManager.getClients(member.userId)
 
@@ -111,7 +110,6 @@ export class MessagesGateway {
     @MessageBody() dto: ReadHistoryDTO,
     @ConnectedSocket() client: TypedSocket
   ): Promise<ReadByMeHistoryResult> {
-    console.log(client.userId, 'LOHHHH')
     const result = await this.messageService.readHistory(dto, client.userId)
 
     this.onReadHistoryByMe(result, client.userId, client.id)
@@ -165,17 +163,12 @@ export class MessagesGateway {
 
     // this.server.in
     // пофіксити, тут не фетчаться клієнти які підключені до кімнати
-    console.log('TRIGGER DELETED!!!', { result }, sockets)
 
-    const test = await this.server.fetchSockets()
-
-    console.log({ test })
     if (result.deleteForAll) {
       sockets.forEach(socket => {
         if (socket.id === requesterSocketId) {
           return
         }
-        console.log('TRIGGER TRIGGER DELETED')
         const chat = ChatDTOMapper.toDTO(result.chat, socket.data.userId)
         socket.emit('message:deleted', { ids: result.ids, chat, deleteForAll: result.deleteForAll, requesterId })
       })
@@ -211,7 +204,6 @@ export class MessagesGateway {
 
     // Це для випадку, коли повідомлення відправляється користувачу, з яким ще не має чату в БД.
     if (sockets.length === 0) {
-      console.log('SOCKETS LENGTH === 0')
       chat.members.forEach(member => {
         const clients = this.gateway.clientsManager.getClients(member.userId)
 

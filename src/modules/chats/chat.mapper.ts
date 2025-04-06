@@ -17,9 +17,7 @@ export class ChatDTOMapper {
     // requesterChatMember?.lastVisibleMessage ? requesterChatMember.lastVisibleMessage
 
     const lastMessageRaw = requesterChatMember?.lastVisibleMessage ?? raw.lastMessage
-    if (requesterChatMember?.lastVisibleMessage) {
-      console.log('ANOTHER VIS MSG', requesterChatMember.lastVisibleMessage)
-    }
+
     return new ChatDTO({
       id: raw.id,
       userId: privateChatUserDTO?.id,

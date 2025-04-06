@@ -23,6 +23,5 @@ export class AppController {
   @UseGuards(AuthGuard('jwt-refresh'))
   getRefresh(@Req() req: Request) {
     const user = req.user
-    console.log(user)
   }
 }

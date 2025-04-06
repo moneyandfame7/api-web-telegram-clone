@@ -25,7 +25,6 @@ export class Gateway implements OnGatewayConnection, OnGatewayDisconnect, OnGate
   async afterInit(server: TypedServer) {
     server.use(async (socket, next) => {
       try {
-        console.log('MIDDLEWARE', socket.id)
         const token: string | undefined = socket.handshake.auth?.token
         if (!token) {
           return next(new UnauthorizedException(ErrorCode.AUTH_TOKEN_MISSING))
@@ -59,20 +58,14 @@ export class Gateway implements OnGatewayConnection, OnGatewayDisconnect, OnGate
     })
   }
 
-  async handleConnection(client: TypedSocket, ...args: any[]) {
-    console.log('CONNECT', client.id, client.userId, client.sessionId)
-    console.log([...this.clientsManager.getAllClients()][0][1])
-  }
+  async handleConnection(client: TypedSocket, ...args: any[]) {}
 
   handleDisconnect(client: Socket) {
-    console.log('Client disconnected', client.id)
-
     this.clientsManager.removeClient(client.id)
   }
 
   @TypedSubscribeMessage('room:join')
   async join(client: Socket, roomName: string) {
-    console.log(`user ${client.data?.userId} joined to room [${roomName}]`)
     // client.handshake.query.userId
     // console.log('QUERY:', client.handshake.query, 'ROOM:', roomName)
     client.join(roomName)

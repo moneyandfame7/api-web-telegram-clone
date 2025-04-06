@@ -5,8 +5,6 @@ import { isUserId } from './chat.helpers'
 @Injectable()
 export class ChatIdPipe implements PipeTransform {
   transform(value: any, metadata: ArgumentMetadata) {
-    console.log({ value })
-
     if (typeof value === 'string') {
       if (isUUID(value)) {
         return value

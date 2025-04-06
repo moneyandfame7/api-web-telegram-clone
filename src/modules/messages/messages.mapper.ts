@@ -4,9 +4,6 @@ import { RawMessage } from './messages.types'
 export class MessageDTOMapper {
   public static toDTO(raw: RawMessage, requesterId: string): MessageDTO {
     const { /* lastInChatId = undefined, */ ...primaryFields } = raw
-    if (primaryFields.replyToMessage) {
-      console.log({ primaryFields })
-    }
     return new MessageDTO({
       ...primaryFields,
       text: primaryFields.text ?? undefined,
