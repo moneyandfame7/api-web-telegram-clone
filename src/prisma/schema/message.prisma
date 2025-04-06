@@ -24,6 +24,12 @@ model Message {
 
   repliedIn Message[] @relation(name: "ReplyTo")
 
+  forwardFromMessageId String?
+  forwardFromMessage   Message?  @relation("ForwardFrom", fields: [forwardFromMessageId], references: [id])
+  forwardedIn          Message[] @relation(name: "ForwardFrom")
+
+  noAuthor Boolean?
+
   deletedByUsers      User[]       @relation(name: "DeletedMessagesByUsers")
   lastVisibleForUsers ChatMember[]
 

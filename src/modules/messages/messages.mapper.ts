@@ -19,6 +19,15 @@ export class MessageDTOMapper {
             text: primaryFields.replyToMessage.text ?? undefined
           }
         : undefined,
+      forwardInfo: primaryFields.forwardFromMessage
+        ? {
+            id: primaryFields.forwardFromMessage.id,
+            sequenceId: primaryFields.forwardFromMessage.sequenceId,
+            senderId: primaryFields.forwardFromMessage.sender.id,
+            text: primaryFields.forwardFromMessage.text ?? undefined,
+            fromChatId: primaryFields.forwardFromMessage.chatId
+          }
+        : undefined,
       isOutgoing: primaryFields.senderId === requesterId,
       isSilent: false
     })

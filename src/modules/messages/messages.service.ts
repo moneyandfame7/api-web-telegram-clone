@@ -4,10 +4,11 @@ import { PrismaService } from '../../prisma/prisma.service'
 import { RawChat } from '../chats/chats.types'
 import { chatInclude } from '../chats/chat.constants'
 
-import { EditMessageResult, GetMessagesDirection, ReadByMeHistoryResult } from './messages.types'
+import { EditMessageResult, GetMessagesDirection, RawMessage, ReadByMeHistoryResult } from './messages.types'
 import {
   DeleteMessagesDTO,
   EditMessageDTO,
+  ForwardMessagesDTO,
   GetMessagesDTO,
   MessageDTO,
   ReadHistoryDTO,
@@ -30,11 +31,13 @@ export class MessagesService {
    * тут в dto chatId може бути або UUID або `u_UUID`.
    * `u_UUID`: використовується для приватного чату, якого ще не існує.
    */
-  async sendMessage(dto: SendMessageDTO, requesterId: string): Promise<{ chat: RawChat; message: any }> {
+  async sendMessage(dto: SendMessageDTO, requesterId: string): Promise<{ chat: RawChat; message: RawMessage }> {
     const chat = await this.chatsService.findOrCreate(dto.chatId, requesterId)
     if (!chat) {
       throw new InvalidEntityIdError()
     }
+
+    console.log({ chat }, 'LALLALAL')
     const message = await this.prisma.message.create({
       data: {
         chatId: chat.id,
@@ -272,6 +275,57 @@ export class MessagesService {
     }
 
     return { chat: chat, ids: dto.ids, deleteForAll: dto.deleteForAll }
+  }
+
+  async forwardMessages(
+    dto: ForwardMessagesDTO,
+    requesterId: string
+  ): Promise<{ chat: RawChat; messages: RawMessage[] }> {
+    const chat = await this.chatsService.findOneRaw(dto.toChatId, requesterId)
+
+    if (!chat) {
+      throw new InvalidEntityIdError()
+    }
+    const messages = await this.prisma.message.createManyAndReturn({
+      data: dto.ids.map(
+        (id, idx) =>
+          ({
+            chatId: chat.id,
+            senderId: requesterId,
+            noAuthor: dto.noAuthor,
+            forwardFromMessageId: id,
+            sequenceId: chat.lastMessage?.sequenceId !== undefined ? chat.lastMessage.sequenceId + 1 + idx : 0
+          }) satisfies Prisma.MessageCreateManyInput
+      ),
+      include: messagesIncludes
+    })
+
+    const updatedChat = await this.prisma.chat.update({
+      where: { id: chat.id },
+      data: {
+        ...(!chat.firstMessage && {
+          firstMessage: { connect: { id: messages[0].id } }
+        }),
+        lastMessage: { connect: { id: messages[messages.length - 1].id } },
+        members: {
+          updateMany: {
+            where: {
+              userId: {
+                not: requesterId
+              }
+            },
+            data: {
+              unreadCount: {
+                increment: messages.length
+              }
+            }
+          }
+        }
+      },
+      include: chatInclude
+    })
+
+    return { messages, chat: updatedChat }
   }
 
   public async readHistory(dto: ReadHistoryDTO, requesterId: string): Promise<ReadByMeHistoryResult> {
