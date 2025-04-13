@@ -88,7 +88,15 @@ class Seeder {
           title: faker.internet.displayName(),
           type: 'GROUP',
           color: getRandomElement(CHAT_COLORS),
-          isSavedMessages: false
+          isSavedMessages: false,
+          chatPermissions: {
+            create: {
+              addUsers: true,
+              changeInfo: true,
+              pinMessages: true,
+              sendMessages: true
+            }
+          }
         }
       })
       await prisma.chat.update({

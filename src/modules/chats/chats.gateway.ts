@@ -4,7 +4,7 @@ import { TypedServer, TypedSocket, TypedSubscribeMessage } from './../../gateway
 
 import { RawChat } from './chats.types'
 import { ChatDTOMapper } from './chat.mapper'
-import { ChatDTO, CreateChatDto } from './chats.dto'
+import { ChatDTO, CreateChatDto, UpdateAdminDTO } from './chats.dto'
 import { ChatsService } from './chats.service'
 import { UseFilters, UsePipes } from '@nestjs/common'
 import { GatewayValidationPipe, WsExceptionFilter } from '../../gateway/gateway-vadliation.pipe'
@@ -23,6 +23,7 @@ export class ChatGateway {
   @TypedSubscribeMessage('chat:create')
   async createChat(@MessageBody() dto: CreateChatDto, @ConnectedSocket() client: TypedSocket): Promise<ChatDTO> {
     const raw = await this.chatService.createOneRaw(dto, client.userId)
+    // await client.join(`chat-${raw.id}`)
 
     this.chatCreated(raw, client.id)
 
@@ -39,13 +40,47 @@ export class ChatGateway {
       const chatDto = ChatDTOMapper.toDTO(chat, member.userId)
       // Clients - Це всі поточні підʼєднання користувачів
       clients.forEach(info => {
-        // не емітимо евент для сокету, який створив чат
-        if (info.socketId === requesterSocketId) {
-          return
+        const socket = this.server.sockets.sockets.get(info.socketId)
+
+        if (socket) {
+          socket.join(`chat-${chatDto.id}`)
+
+          if (info.socketId !== requesterSocketId) {
+            socket.emit('chat:created', chatDto)
+          }
         }
 
-        this.server.to(info.socketId).emit('chat:created', chatDto)
+        // this.server.in(info.socketId).socketsJoin(`chat-${chatDto.id}`)
+        // this.server.to(info.socketId).emit('chat:created', chatDto)
       })
+    })
+  }
+
+  @TypedSubscribeMessage('chat:update-admin')
+  async updateAdmin(@MessageBody() dto: UpdateAdminDTO, @ConnectedSocket() client: TypedSocket): Promise<boolean> {
+    await this.chatService.updateAdmin(dto, client.userId)
+
+    await this.adminUpdated(
+      {
+        userId: dto.userId,
+        chatId: dto.chatId,
+        adminPermissions: dto.adminPermissions
+      },
+      client.id
+    )
+
+    return true
+  }
+
+  async adminUpdated(update: UpdateAdminDTO, requesterSocketId: string) {
+    const sockets = await this.server.in(`chat-${update.chatId}`).fetchSockets()
+
+    sockets.forEach(socket => {
+      if (socket.id === requesterSocketId) {
+        return
+      }
+
+      socket.emit('chat:admin-updated', update)
     })
   }
 }

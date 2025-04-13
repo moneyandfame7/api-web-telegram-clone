@@ -13,6 +13,8 @@ import { SocketsManager } from './socket-clients.manager'
 import { UnauthorizedException } from '@nestjs/common'
 import { ErrorCode } from '../common/errors/error-code.enum'
 import { TokenExpiredError } from '@nestjs/jwt'
+import { PrismaService } from '../prisma/prisma.service'
+import { ChatsService } from '../modules/chats/chats.service'
 
 // що якщо юзер підключатиметься з двох девайсів? одразу
 @WebSocketGateway({ cors: true })
@@ -20,7 +22,10 @@ export class Gateway implements OnGatewayConnection, OnGatewayDisconnect, OnGate
   @WebSocketServer() server: TypedServer
   public clientsManager = new SocketsManager()
 
-  public constructor(private authorizationService: AuthorizationService) {}
+  public constructor(
+    private authorizationService: AuthorizationService,
+    private chatsService: ChatsService
+  ) {}
 
   async afterInit(server: TypedServer) {
     server.use(async (socket, next) => {
@@ -47,6 +52,11 @@ export class Gateway implements OnGatewayConnection, OnGatewayDisconnect, OnGate
         }
         this.clientsManager.addClient(payload.userId, socketInfo)
 
+        const chatIds = await this.chatsService.findManyIds(payload.userId)
+        chatIds.forEach(id => {
+          socket.join(`chat-${id}`)
+        })
+        // socket.join(`user:${payload.userId}`)
         next()
       } catch (error) {
         if (error instanceof TokenExpiredError) {

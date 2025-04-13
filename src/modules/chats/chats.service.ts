@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common'
-import { ChatDTO, CreateChatDto } from './chats.dto'
+import { ChatDetailsDTO, ChatDTO, ChatMemberDTO, CreateChatDto, UpdateAdminDTO } from './chats.dto'
 import { CHAT_COLORS, chatInclude } from './chat.constants'
 import { Chat } from '@prisma/client'
 import { ChatDTOMapper } from './chat.mapper'
 import { GetChatsResult, RawChat } from './chats.types'
 import { PrismaService } from '../../prisma/prisma.service'
-import { getRandomElement } from '../../common/helpers'
+import { getRandomElement, uniqueBy } from '../../common/helpers'
 import { isUserId } from './chat.helpers'
-import { userInclude } from '../users/users.constants'
 import { UserDTOMapper } from '../users/users.mapper'
+import { ChatIdInvalidError } from '../../common/errors/chats.errors'
 
 @Injectable()
 export class ChatsService {
@@ -29,6 +29,16 @@ export class ChatsService {
             isOwner: memberId === requesterId
           }))
         },
+        ...(dto.type !== 'PRIVATE' && {
+          chatPermissions: {
+            create: {
+              addUsers: true,
+              changeInfo: true,
+              pinMessages: true,
+              sendMessages: true
+            }
+          }
+        }),
         isSavedMessages: false
       },
       include: chatInclude
@@ -47,12 +57,32 @@ export class ChatsService {
       include: chatInclude
     })
 
-    const mentionedUsers = raws.map(chat => chat.lastMessage?.sender).filter(sender => sender !== undefined)
+    const mentionedUsers = uniqueBy(
+      raws.map(chat => chat.lastMessage?.sender).filter(sender => sender !== undefined),
+      'id'
+    )
 
     const chats = ChatDTOMapper.toDTOList(raws, requesterId)
     const users = UserDTOMapper.toDTOList(mentionedUsers, requesterId)
 
     return { chats, users }
+  }
+
+  public async findManyIds(requesterId: string): Promise<string[]> {
+    const raws = await this.prisma.chat.findMany({
+      where: {
+        members: {
+          some: {
+            userId: requesterId
+          }
+        }
+      },
+      select: {
+        id: true
+      }
+    })
+
+    return raws.map(raw => raw.id)
   }
 
   public async findManyRaw(requesterId: string): Promise<RawChat[]> {
@@ -149,5 +179,70 @@ export class ChatsService {
     }
 
     return this.findOneRaw(chatId, requesterId)
+  }
+
+  public async updateAdmin(dto: UpdateAdminDTO, requesterId: string): Promise<boolean> {
+    const chat = await this.findOneRaw(dto.chatId, requesterId)
+
+    if (!chat) {
+      throw new ChatIdInvalidError()
+    }
+
+    await this.prisma.chatMember.update({
+      where: {
+        compositeMemberId: {
+          userId: dto.userId,
+          chatId: dto.chatId
+        }
+      },
+      data: {
+        adminPermissions: {
+          ...(dto.adminPermissions
+            ? {
+                upsert: {
+                  create: {
+                    ...dto.adminPermissions,
+                    promotedByUserId: requesterId
+                  },
+                  update: {
+                    ...dto.adminPermissions,
+                    promotedByUserId: requesterId
+                  }
+                }
+              }
+            : { delete: true })
+        }
+      }
+    })
+
+    return true
+  }
+
+  public async getChatDetails(id: string): Promise<ChatDetailsDTO> {
+    const members = await this.prisma.chatMember.findMany({
+      where: {
+        chatId: id
+      },
+      select: {
+        adminPermissions: true,
+        userId: true,
+        chatId: true
+      }
+    })
+
+    const filteredMembers: ChatMemberDTO[] = members.map(member => ({
+      userId: member.userId,
+      chatId: member.chatId,
+      adminPermissions: member.adminPermissions ?? undefined
+    }))
+
+    const adminIds = filteredMembers.filter(member => !!member.adminPermissions).map(m => m.userId)
+
+    return {
+      chatId: id,
+      adminIds,
+      members: filteredMembers,
+      kickedIds: []
+    }
   }
 }

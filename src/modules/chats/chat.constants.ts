@@ -19,6 +19,7 @@ export const chatInclude = {
   firstMessage: {
     include: messagesIncludes
   },
+  chatPermissions: true,
   _count: {
     select: {
       members: true

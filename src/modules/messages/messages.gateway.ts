@@ -64,12 +64,15 @@ export class MessagesGateway {
         const messageDto = MessageDTOMapper.toDTO(message, member.userId)
         // Clients - Це всі поточні підʼєднання користувачів
         clients.forEach(info => {
-          // не емітимо евент для сокету, який створив чат
-          if (info.socketId === requesterSocketId) {
-            return
-          }
+          const socket = this.server.sockets.sockets.get(info.socketId)
 
-          this.server.to(info.socketId).emit('message:new', messageDto, chatDto)
+          if (socket) {
+            socket.join(`chat-${chatDto.id}`)
+
+            if (info.socketId !== requesterSocketId) {
+              socket.emit('message:new', messageDto, chatDto)
+            }
+          }
         })
       })
       return
@@ -215,12 +218,15 @@ export class MessagesGateway {
 
         // Clients - Це всі поточні підʼєднання користувачів
         clients.forEach(info => {
-          // не емітимо евент для сокету, який створив чат
-          if (info.socketId === requesterSocketId) {
-            return
-          }
+          const socket = this.server.sockets.sockets.get(info.socketId)
 
-          this.server.to(info.socketId).emit('message:forwarded', messageDTOList, chatDto)
+          if (socket) {
+            socket.join(`chat-${chatDto.id}`)
+
+            if (info.socketId !== requesterSocketId) {
+              socket.emit('message:forwarded', messageDTOList, chatDto)
+            }
+          }
         })
       })
       return

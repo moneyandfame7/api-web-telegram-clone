@@ -11,6 +11,8 @@ model User {
   messages        Message[]
   deletedMessages Message[]    @relation(name: "DeletedMessagesByUsers")
 
+  joinRequestsInChat JoinRequests[]
+
   contacts        Contact[] @relation(name: "ContactToOwner")
   addedByContacts Contact[] @relation(name: "ContactToUser")
 }

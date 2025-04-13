@@ -1,4 +1,4 @@
-import { Chat, ChatMember, Message } from '@prisma/client'
+import { Chat, ChatMember, ChatPermissions, Message } from '@prisma/client'
 import { RawUser } from '../users/users.types'
 import { ChatDTO } from './chats.dto'
 import { UserDTO } from '../users/users.dto'
@@ -16,6 +16,7 @@ export interface RawChat extends Chat {
   }
   lastMessage: RawMessage | null
   firstMessage: RawMessage | null
+  chatPermissions: ChatPermissions | null
 }
 
 export interface RawChatMember extends ChatMember {

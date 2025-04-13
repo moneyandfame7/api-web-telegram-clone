@@ -4,7 +4,7 @@ import { JwtAuthGuard } from '../authorization/authorization.guard'
 import { CurrentAuth } from '../authorization/authorization.decorator'
 import { AuthorizationPayload } from '../authorization/authorization.types'
 
-import { ChatDTO } from './chats.dto'
+import { ChatDetailsDTO, ChatDTO } from './chats.dto'
 import { ChatsService } from './chats.service'
 import { GetChatsResult, RawChat } from './chats.types'
 import { ChatIdPipe } from './chat.pipes'
@@ -23,6 +23,15 @@ export class ChatsController {
   @Get('/raw')
   public async findManyRaw(@CurrentAuth() auth: AuthorizationPayload): Promise<RawChat[]> {
     return this.service.findManyRaw(auth.userId)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/:id/details')
+  public async getChatDetails(
+    @CurrentAuth() auth: AuthorizationPayload,
+    @Param('id', new ChatIdPipe()) id: string
+  ): Promise<ChatDetailsDTO> {
+    return this.service.getChatDetails(id)
   }
 
   @UseGuards(JwtAuthGuard)

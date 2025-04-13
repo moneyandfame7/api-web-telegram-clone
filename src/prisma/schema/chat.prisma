@@ -6,17 +6,31 @@ model Chat {
   description     String?
   createdAt       DateTime  @default(now())
   isSavedMessages Boolean
+  isPrivate       Boolean   @default(true)
 
-  members      ChatMember[]
-  messages     Message[]
-  lastMessage  Message?     @relation(name: "LastMessageIn")
-  firstMessage Message?     @relation(name: "FirstMessageIn")
+  chatPermissions ChatPermissions?
+  joinRequests    JoinRequests[]
+  members         ChatMember[]
+  messages        Message[]
+  lastMessage     Message?         @relation(name: "LastMessageIn")
+  firstMessage    Message?         @relation(name: "FirstMessageIn")
+}
+
+model JoinRequests {
+  id String @id @default(uuid())
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  chat   Chat   @relation(fields: [chatId], references: [id])
+  chatId String
 }
 
 model ChatMember {
   id String @id @default(uuid())
 
   isOwner    Boolean
+  isAdmin    Boolean @default(false)
   isPinned   Boolean @default(false)
   isMuted    Boolean @default(false)
   isArchived Boolean @default(false)
@@ -29,10 +43,40 @@ model ChatMember {
   // @todo change to setnull
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId               String
-  Chat                 Chat?    @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  chatId               String?
+  Chat                 Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  chatId               String
+
+  adminPermissions ChatAdminPermissions?
 
   @@unique([chatId, userId], name: "compositeMemberId")
+}
+
+model ChatPermissions {
+  id String @id @default(uuid())
+
+  chat   Chat   @relation(fields: [chatId], references: [id])
+  chatId String @unique
+
+  sendMessages Boolean @default(true)
+  addUsers     Boolean @default(true)
+  pinMessages  Boolean @default(true)
+  changeInfo   Boolean @default(true)
+}
+
+model ChatAdminPermissions {
+  id String @id @default(uuid())
+
+  member   ChatMember @relation(fields: [memberId], references: [id])
+  memberId String     @unique
+
+  changeInfo     Boolean @default(true)
+  deleteMessages Boolean @default(true)
+  banUsers       Boolean @default(true)
+  pinMessages    Boolean @default(true)
+  addNewAdmins   Boolean @default(false)
+
+  customTitle      String?
+  promotedByUserId String
 }
 
 enum ChatType {

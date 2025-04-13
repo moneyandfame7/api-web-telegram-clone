@@ -32,6 +32,14 @@ export class ChatDTOMapper {
       myLastReadMessageSequenceId: requesterChatMember?.myLastReadMessageSequenceId ?? undefined,
       theirLastReadMessageSequenceId: theirLastReadMessageSequenceId ?? undefined,
       unreadCount: requesterChatMember?.unreadCount ?? 0,
+      permissions: raw.chatPermissions
+        ? {
+            addUsers: raw.chatPermissions?.addUsers,
+            changeInfo: raw.chatPermissions?.changeInfo,
+            pinMessages: raw.chatPermissions?.pinMessages,
+            sendMessages: raw.chatPermissions?.sendMessages
+          }
+        : undefined,
       isSavedMessages: raw.isSavedMessages,
       isPinned: isJoined ? requesterChatMember.isPinned : false,
       isArchived: isJoined ? requesterChatMember.isArchived : false,
