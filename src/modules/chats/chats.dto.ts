@@ -120,7 +120,7 @@ export class UpdateAdminDTO {
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => AdminPermissionsDTO)
-  adminPermissions: AdminPermissionsDTO | null
+  adminPermissions?: AdminPermissionsDTO
 }
 export class ChatMemberDTO {
   userId: string
