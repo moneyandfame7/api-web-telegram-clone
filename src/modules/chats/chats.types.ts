@@ -22,4 +22,15 @@ export interface RawChat extends Chat {
 export interface RawChatMember extends ChatMember {
   user: RawUser
   lastVisibleMessage: RawMessage | null
+  adminPermissions: RawAdminPermissions | null
+}
+
+export interface RawAdminPermissions {
+  addNewAdmins: boolean
+  banUsers: boolean
+  changeInfo: boolean
+  deleteMessages: boolean
+  pinMessages: boolean
+  customTitle: string | null
+  promotedByUserId: string
 }

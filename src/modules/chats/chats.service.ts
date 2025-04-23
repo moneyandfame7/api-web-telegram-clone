@@ -26,7 +26,14 @@ export class ChatsService {
         members: {
           create: memberIds.map(memberId => ({
             userId: memberId,
-            isOwner: memberId === requesterId
+            isOwner: memberId === requesterId,
+            ...(memberId === requesterId && {
+              adminPermissions: {
+                create: {
+                  promotedByUserId: requesterId
+                }
+              }
+            })
           }))
         },
         ...(dto.type !== 'PRIVATE' && {
@@ -226,14 +233,26 @@ export class ChatsService {
       select: {
         adminPermissions: true,
         userId: true,
-        chatId: true
+        chatId: true,
+        isOwner: true
       }
     })
 
     const filteredMembers: ChatMemberDTO[] = members.map(member => ({
       userId: member.userId,
       chatId: member.chatId,
-      adminPermissions: member.adminPermissions ?? undefined
+      adminPermissions: member.adminPermissions
+        ? {
+            addNewAdmins: member.adminPermissions.addNewAdmins,
+            banUsers: member.adminPermissions.banUsers,
+            changeInfo: member.adminPermissions.changeInfo,
+            deleteMessages: member.adminPermissions.deleteMessages,
+            pinMessages: member.adminPermissions.pinMessages,
+            customTitle: member.adminPermissions.customTitle ?? undefined,
+            promotedByUserId: member.adminPermissions.promotedByUserId
+          }
+        : undefined,
+      isOwner: member.isOwner
     }))
 
     const adminIds = filteredMembers.filter(member => !!member.adminPermissions).map(m => m.userId)

@@ -18,7 +18,7 @@ export class ChatDTO {
   theirLastReadMessageSequenceId?: number
   unreadCount: number
   permissions?: ChatPermissionsDTO
-
+  adminPermissions?: AdminPermissionsDTO
   isSavedMessages!: boolean
   isPinned!: boolean
   isMuted!: boolean
@@ -40,6 +40,7 @@ export class ChatDTO {
     theirLastReadMessageSequenceId?: number
     unreadCount: number
     permissions?: ChatPermissionsDTO
+    adminPermissions?: AdminPermissionsDTO
 
     isSavedMessages: boolean
     isPinned: boolean
@@ -61,7 +62,7 @@ export class ChatDTO {
     this.theirLastReadMessageSequenceId = data.theirLastReadMessageSequenceId
     this.unreadCount = data.unreadCount
     this.permissions = data.permissions
-
+    this.adminPermissions = data.adminPermissions
     this.isSavedMessages = data.isSavedMessages
     this.isPinned = data.isPinned
     this.isMuted = data.isMuted
@@ -108,6 +109,8 @@ export class AdminPermissionsDTO {
   banUsers: boolean
   pinMessages: boolean
   addNewAdmins: boolean
+  customTitle?: string
+  promotedByUserId: string
 }
 
 export class UpdateAdminDTO {
@@ -126,6 +129,7 @@ export class ChatMemberDTO {
   userId: string
   chatId: string
   adminPermissions?: AdminPermissionsDTO
+  isOwner: boolean
 }
 export class ChatDetailsDTO {
   chatId: string

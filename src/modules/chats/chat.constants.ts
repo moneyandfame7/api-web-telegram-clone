@@ -10,6 +10,17 @@ export const chatInclude = {
       },
       lastVisibleMessage: {
         include: messagesIncludes
+      },
+      adminPermissions: {
+        select: {
+          addNewAdmins: true,
+          banUsers: true,
+          changeInfo: true,
+          deleteMessages: true,
+          pinMessages: true,
+          customTitle: true,
+          promotedByUserId: true
+        }
       }
     }
   },

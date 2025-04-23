@@ -40,6 +40,17 @@ export class ChatDTOMapper {
             sendMessages: raw.chatPermissions?.sendMessages
           }
         : undefined,
+      adminPermissions: requesterChatMember?.adminPermissions
+        ? {
+            addNewAdmins: requesterChatMember.adminPermissions.addNewAdmins,
+            banUsers: requesterChatMember.adminPermissions.banUsers,
+            changeInfo: requesterChatMember.adminPermissions.changeInfo,
+            deleteMessages: requesterChatMember.adminPermissions.deleteMessages,
+            pinMessages: requesterChatMember.adminPermissions.pinMessages,
+            promotedByUserId: requesterChatMember.adminPermissions.promotedByUserId,
+            customTitle: requesterChatMember.adminPermissions.customTitle ?? undefined
+          }
+        : undefined,
       isSavedMessages: raw.isSavedMessages,
       isPinned: isJoined ? requesterChatMember.isPinned : false,
       isArchived: isJoined ? requesterChatMember.isArchived : false,

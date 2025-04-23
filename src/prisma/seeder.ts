@@ -108,7 +108,14 @@ class Seeder {
           members: {
             create: [admin, user1, user2].map(user => ({
               userId: user.id,
-              isOwner: user.username === 'admin'
+              isOwner: user.username === 'admin',
+              ...(user.username === 'admin' && {
+                adminPermissions: {
+                  create: {
+                    promotedByUserId: user.id
+                  }
+                }
+              })
             }))
           }
         }
