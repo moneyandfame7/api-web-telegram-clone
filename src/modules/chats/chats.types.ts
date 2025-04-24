@@ -1,6 +1,6 @@
-import { Chat, ChatMember, ChatPermissions, Message } from '@prisma/client'
+import { Chat, ChatMember, ChatPermissions, ChatPrivacyType, Message } from '@prisma/client'
 import { RawUser } from '../users/users.types'
-import { ChatDTO } from './chats.dto'
+import { ChatDTO, UpdateChatInfoDTO, UpdateChatPrivacyDTO } from './chats.dto'
 import { UserDTO } from '../users/users.dto'
 import { RawMessage } from '../messages/messages.types'
 
@@ -8,6 +8,14 @@ export interface GetChatsResult {
   chats: ChatDTO[]
   users: UserDTO[]
 }
+
+export interface UpdateChatPrivacyResult {
+  chatId: string
+  privacyType?: ChatPrivacyType
+  allowContentSaving?: boolean
+}
+
+export type UpdateChatResult = UpdateChatInfoDTO & UpdateChatPrivacyDTO
 
 export interface RawChat extends Chat {
   members: Array<RawChatMember>

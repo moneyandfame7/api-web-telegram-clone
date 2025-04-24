@@ -1,5 +1,5 @@
-import { ChatColor, ChatType } from '@prisma/client'
-import { IsEnum, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator'
+import { ChatColor, ChatPrivacyType, ChatType } from '@prisma/client'
+import { IsBoolean, IsEnum, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator'
 import { MessageDTO } from '../messages/messages.dto'
 import { Type } from 'class-transformer'
 
@@ -17,8 +17,10 @@ export class ChatDTO {
   myLastReadMessageSequenceId?: number
   theirLastReadMessageSequenceId?: number
   unreadCount: number
+  privacyType: ChatPrivacyType
   permissions?: ChatPermissionsDTO
   adminPermissions?: AdminPermissionsDTO
+  allowSavingContent: boolean
   isSavedMessages!: boolean
   isPinned!: boolean
   isMuted!: boolean
@@ -39,9 +41,11 @@ export class ChatDTO {
     myLastReadMessageSequenceId?: number
     theirLastReadMessageSequenceId?: number
     unreadCount: number
+    privacyType: ChatPrivacyType
+
     permissions?: ChatPermissionsDTO
     adminPermissions?: AdminPermissionsDTO
-
+    allowSavingContent: boolean
     isSavedMessages: boolean
     isPinned: boolean
     isMuted: boolean
@@ -61,8 +65,12 @@ export class ChatDTO {
     this.myLastReadMessageSequenceId = data.myLastReadMessageSequenceId
     this.theirLastReadMessageSequenceId = data.theirLastReadMessageSequenceId
     this.unreadCount = data.unreadCount
+    this.privacyType = data.privacyType
+
     this.permissions = data.permissions
     this.adminPermissions = data.adminPermissions
+
+    this.allowSavingContent = data.allowSavingContent
     this.isSavedMessages = data.isSavedMessages
     this.isPinned = data.isPinned
     this.isMuted = data.isMuted
@@ -85,6 +93,31 @@ export class CreateChatDto {
   @IsUUID(undefined, { each: true })
   @IsOptional()
   users!: string[]
+}
+
+export class UpdateChatInfoDTO {
+  @IsUUID()
+  chatId: string
+
+  @IsString()
+  @IsOptional()
+  title?: string
+
+  @IsString()
+  @IsOptional()
+  description?: string
+}
+export class UpdateChatPrivacyDTO {
+  @IsUUID()
+  chatId: string
+
+  @IsEnum(ChatPrivacyType)
+  @IsOptional()
+  privacyType?: ChatPrivacyType
+
+  @IsBoolean()
+  @IsOptional()
+  allowContentSaving?: boolean
 }
 
 export class TestChatDto {

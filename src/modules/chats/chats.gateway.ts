@@ -4,7 +4,7 @@ import { TypedServer, TypedSocket, TypedSubscribeMessage } from './../../gateway
 
 import { RawChat } from './chats.types'
 import { ChatDTOMapper } from './chat.mapper'
-import { ChatDTO, CreateChatDto, UpdateAdminDTO } from './chats.dto'
+import { ChatDTO, CreateChatDto, UpdateAdminDTO, UpdateChatInfoDTO, UpdateChatPrivacyDTO } from './chats.dto'
 import { ChatsService } from './chats.service'
 import { UseFilters, UsePipes } from '@nestjs/common'
 import { GatewayValidationPipe, WsExceptionFilter } from '../../gateway/gateway-vadliation.pipe'
@@ -54,6 +54,30 @@ export class ChatGateway {
         // this.server.to(info.socketId).emit('chat:created', chatDto)
       })
     })
+  }
+
+  @TypedSubscribeMessage('chat:update-info')
+  /**
+   * @todo add Guard - Owner and Admin
+   */
+  async updateChatInfo(@MessageBody() dto: UpdateChatInfoDTO, @ConnectedSocket() client: TypedSocket) {
+    const updatedInfo = await this.chatService.updateInfo(dto, client.userId)
+
+    client.to(`chat-${updatedInfo.chatId}`).emit('chat:updated', updatedInfo)
+
+    return updatedInfo
+  }
+
+  @TypedSubscribeMessage('chat:update-privacy')
+  /**
+   * @todo add Guard - only Owner
+   */
+  async updateChatPrivacy(@MessageBody() dto: UpdateChatPrivacyDTO, @ConnectedSocket() client: TypedSocket) {
+    const updatedPrivacy = await this.chatService.updatePrivacy(dto, client.userId)
+
+    client.to(`chat-${updatedPrivacy.chatId}`).emit('chat:updated', updatedPrivacy)
+
+    return updatedPrivacy
   }
 
   @TypedSubscribeMessage('chat:update-admin')

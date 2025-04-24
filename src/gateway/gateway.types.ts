@@ -1,7 +1,7 @@
 import { SubscribeMessage } from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io'
 
-import { ChatDTO, UpdateAdminDTO } from '../modules/chats/chats.dto'
+import { ChatDTO, UpdateAdminDTO, UpdateChatInfoDTO, UpdateChatPrivacyDTO } from '../modules/chats/chats.dto'
 import { MessageDTO } from '../modules/messages/messages.dto'
 import {
   DeleteMessagesResult,
@@ -9,12 +9,15 @@ import {
   ReadByMeHistoryResult,
   ReadByThemHistoryResult
 } from '../modules/messages/messages.types'
+import { UpdateChatResult } from '../modules/chats/chats.types'
 
 export interface ListenEvents {
   ['room:join']: void
 
   ['chat:create']: void
   ['chat:update-admin']: void
+  ['chat:update-info']: void
+  ['chat:update-privacy']: void
 
   ['message:send']: void
   ['message:edit']: void
@@ -26,6 +29,7 @@ export interface ListenEvents {
 export interface EmitEvents {
   ['chat:created']: (chat: ChatDTO) => void
   ['chat:admin-updated']: (data: UpdateAdminDTO) => void
+  ['chat:updated']: (data: UpdateChatResult) => void
 
   ['message:new']: (message: MessageDTO, chat: ChatDTO) => void
   ['message:edited']: (data: EditMessageResult) => void

@@ -32,6 +32,7 @@ export class ChatDTOMapper {
       myLastReadMessageSequenceId: requesterChatMember?.myLastReadMessageSequenceId ?? undefined,
       theirLastReadMessageSequenceId: theirLastReadMessageSequenceId ?? undefined,
       unreadCount: requesterChatMember?.unreadCount ?? 0,
+      privacyType: raw.privacyType,
       permissions: raw.chatPermissions
         ? {
             addUsers: raw.chatPermissions?.addUsers,
@@ -51,6 +52,7 @@ export class ChatDTOMapper {
             customTitle: requesterChatMember.adminPermissions.customTitle ?? undefined
           }
         : undefined,
+      allowSavingContent: raw.allowSavingContent,
       isSavedMessages: raw.isSavedMessages,
       isPinned: isJoined ? requesterChatMember.isPinned : false,
       isArchived: isJoined ? requesterChatMember.isArchived : false,

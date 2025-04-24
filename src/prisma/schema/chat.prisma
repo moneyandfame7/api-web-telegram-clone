@@ -6,7 +6,14 @@ model Chat {
   description     String?
   createdAt       DateTime  @default(now())
   isSavedMessages Boolean
-  isPrivate       Boolean   @default(true)
+
+  privacyType        ChatPrivacyType @default(PRIVATE)
+  allowSavingContent Boolean         @default(true)
+
+  publicLink            String?          @unique
+  inviteLink            ChatInviteLink?  @relation(name: "PrimaryInviteLink", fields: [inviteLinkId], references: [id])
+  inviteLinkId          String?          @unique
+  additionalInviteLinks ChatInviteLink[] @relation(name: "AdditionalInviteLink")
 
   chatPermissions ChatPermissions?
   joinRequests    JoinRequests[]
@@ -14,6 +21,24 @@ model Chat {
   messages        Message[]
   lastMessage     Message?         @relation(name: "LastMessageIn")
   firstMessage    Message?         @relation(name: "FirstMessageIn")
+}
+
+model ChatInviteLink {
+  id             String    @id @default(uuid())
+  name           String?
+  createdAt      DateTime  @default(now())
+  expiresAt      DateTime?
+  limitUserCount Int?
+  isPrimary      Boolean
+  adminApproval  Boolean   @default(false)
+
+  createdByMember   ChatMember   @relation(fields: [createdByMemberId], references: [id])
+  createdByMemberId String
+  joinedMembers     ChatMember[] @relation(name: "JoinedViaLink")
+
+  primaryInChat      Chat?   @relation(name: "PrimaryInviteLink")
+  additionalInChat   Chat?   @relation(name: "AdditionalInviteLink", fields: [additionalInChatId], references: [id])
+  additionalInChatId String?
 }
 
 model JoinRequests {
@@ -47,6 +72,10 @@ model ChatMember {
   chatId               String
 
   adminPermissions ChatAdminPermissions?
+
+  createdLinks    ChatInviteLink[]
+  joinedViaLink   ChatInviteLink?  @relation(name: "JoinedViaLink", fields: [joinedViaLinkId], references: [id])
+  joinedViaLinkId String?
 
   @@unique([chatId, userId], name: "compositeMemberId")
 }
@@ -83,4 +112,9 @@ enum ChatType {
   PRIVATE
   GROUP
   CHANNEL
+}
+
+enum ChatPrivacyType {
+  PRIVATE
+  PUBLIC
 }

@@ -1,5 +1,13 @@
 import { Injectable } from '@nestjs/common'
-import { ChatDetailsDTO, ChatDTO, ChatMemberDTO, CreateChatDto, UpdateAdminDTO } from './chats.dto'
+import {
+  ChatDetailsDTO,
+  ChatDTO,
+  ChatMemberDTO,
+  CreateChatDto,
+  UpdateAdminDTO,
+  UpdateChatInfoDTO,
+  UpdateChatPrivacyDTO
+} from './chats.dto'
 import { CHAT_COLORS, chatInclude } from './chat.constants'
 import { Chat } from '@prisma/client'
 import { ChatDTOMapper } from './chat.mapper'
@@ -223,6 +231,34 @@ export class ChatsService {
     })
 
     return true
+  }
+  // можливо один метод зробити для цього всього оновлення
+  // public async updateOne(dto)
+
+  public async updateInfo(dto: UpdateChatInfoDTO, requesterId: string): Promise<UpdateChatInfoDTO> {
+    await this.prisma.chat.update({
+      where: {
+        id: dto.chatId
+      },
+      data: {
+        title: dto.title,
+        description: dto.description
+      }
+    })
+
+    return dto
+  }
+
+  public async updatePrivacy(dto: UpdateChatPrivacyDTO, requesterId: string): Promise<UpdateChatPrivacyDTO> {
+    const { chatId, ...data } = dto
+    await this.prisma.chat.update({
+      where: {
+        id: dto.chatId
+      },
+      data
+    })
+
+    return dto
   }
 
   public async getChatDetails(id: string): Promise<ChatDetailsDTO> {
