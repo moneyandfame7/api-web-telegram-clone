@@ -29,7 +29,6 @@ model ChatInviteLink {
   createdAt      DateTime  @default(now())
   expiresAt      DateTime?
   limitUserCount Int?
-  isPrimary      Boolean
   adminApproval  Boolean   @default(false)
 
   createdByMember   ChatMember   @relation(fields: [createdByMemberId], references: [id])
