@@ -31,8 +31,8 @@ model ChatInviteLink {
   limitUserCount Int?
   adminApproval  Boolean   @default(false)
 
-  createdByMember   ChatMember   @relation(fields: [createdByMemberId], references: [id])
-  createdByMemberId String
+  createdByMember   ChatMember?  @relation(fields: [createdByMemberId], references: [id])
+  createdByMemberId String?
   joinedMembers     ChatMember[] @relation(name: "JoinedViaLink")
 
   primaryInChat      Chat?   @relation(name: "PrimaryInviteLink")
